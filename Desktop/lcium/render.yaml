@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: rtc-whiteboard
+    env: node
+    buildCommand: npm install && cd server && npm install && cd .. && npm run build
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000 
