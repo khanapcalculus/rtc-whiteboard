@@ -1,0 +1,65 @@
+.toolbar {
+  position: relative;
+  border-radius: 12px;
+  padding: 8px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  border: none;
+  
+  /* Semi-transparent glassmorphism background */
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.tool-button {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.tool-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.tool-button.active {
+  background: rgba(74, 144, 226, 0.3);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  color: white;
+  border: 1px solid rgba(74, 144, 226, 0.4);
+  box-shadow: 0 6px 20px rgba(74, 144, 226, 0.2);
+}
+
+.tool-button.active:hover {
+  background: rgba(74, 144, 226, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
+}
+
+.tool-button.active img {
+  filter: brightness(0) invert(1);
+}
+
+.tool-button img {
+  width: 24px;
+  height: 24px;
+}
