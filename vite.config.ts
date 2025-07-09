@@ -7,15 +7,8 @@ export default defineConfig({
   base: '/rtc-whiteboard/',
   build: {
     outDir: 'dist',
-    assetsDir: 'assets',
-    rollupOptions: {
-      output: {
-        manualChunks: undefined,
-        assetFileNames: 'assets/[name].[ext]',
-        chunkFileNames: 'assets/[name].js',
-        entryFileNames: 'assets/[name].js',
-      },
-    },
+    emptyOutDir: true,
+    sourcemap: true,
   },
   server: {
     host: true,
