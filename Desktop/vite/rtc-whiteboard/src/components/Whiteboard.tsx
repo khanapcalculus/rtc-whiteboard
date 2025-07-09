@@ -559,7 +559,7 @@ const Whiteboard = () => {
         >
             {/* Logo */}
             <img 
-                src="/logo.png" 
+                src={`${import.meta.env.BASE_URL}logo.png`}
                 alt="Logo" 
                 style={{
                     position: 'fixed',
