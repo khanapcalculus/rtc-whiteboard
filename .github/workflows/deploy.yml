@@ -19,21 +19,16 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: rtc-whiteboard/package-lock.json
         
     - name: Install dependencies
-      run: |
-        cd rtc-whiteboard
-        npm ci
+      run: npm ci
         
     - name: Build
-      run: |
-        cd rtc-whiteboard
-        npm run build
+      run: npm run build
         
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       if: github.ref == 'refs/heads/main'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./rtc-whiteboard/dist 
+        publish_dir: ./dist 
