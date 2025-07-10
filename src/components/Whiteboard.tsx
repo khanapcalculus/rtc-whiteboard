@@ -135,8 +135,11 @@ const Whiteboard = () => {
             // Only prevent default if it's not a toolbar interaction or text input
             if (!isToolbarElement && !isTextInput && e.touches.length > 0) {
                 if (tool === 'select') {
-                    // For selection tool, prevent default to avoid scrolling and enable touch interactions
-                    e.preventDefault();
+                    // For selection tool, be more permissive to allow transformer interactions
+                    // Only prevent default on touchstart to avoid conflicts
+                    if (e.type === 'touchstart') {
+                        e.preventDefault();
+                    }
                 } else if (tool === 'pen') {
                     // For pen tool, prevent all default touch behaviors to enable drawing over everything
                     e.preventDefault();
@@ -225,14 +228,8 @@ const Whiteboard = () => {
                 e.evt.preventDefault();
                 e.evt.stopPropagation();
             }
-            // Shorter delay for touch events to ensure proper handling
-            if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
-                setTimeout(() => {
-                    handleMouseDown(e);
-                }, 50);
-            } else {
-                handleMouseDown(e);
-            }
+            // Immediate handling for touch events
+            handleMouseDown(e);
             return;
         }
         
@@ -403,12 +400,10 @@ const Whiteboard = () => {
                 e.evt.preventDefault();
                 e.evt.stopPropagation();
             }
-            // For touch events, ensure proper selection with shorter delay
+            // For touch events, ensure proper selection with immediate handling
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
-                // Shorter delay for better touch responsiveness
-                setTimeout(() => {
-                    handleMouseDown(e);
-                }, 50);
+                // Immediate handling for better touch responsiveness
+                handleMouseDown(e);
             } else {
                 handleMouseDown(e);
             }
@@ -423,12 +418,10 @@ const Whiteboard = () => {
                 e.evt.preventDefault();
                 e.evt.stopPropagation();
             }
-            // For touch events, ensure proper selection with shorter delay
+            // For touch events, ensure proper selection with immediate handling
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
-                // Shorter delay for better touch responsiveness
-                setTimeout(() => {
-                    handleMouseDown(e);
-                }, 50);
+                // Immediate handling for better touch responsiveness
+                handleMouseDown(e);
             } else {
                 handleMouseDown(e);
             }
@@ -442,12 +435,10 @@ const Whiteboard = () => {
                 e.evt.preventDefault();
                 e.evt.stopPropagation();
             }
-            // For touch events, ensure proper selection with shorter delay
+            // For touch events, ensure proper selection with immediate handling
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
-                // Shorter delay for better touch responsiveness
-                setTimeout(() => {
-                    handleMouseDown(e);
-                }, 50);
+                // Immediate handling for better touch responsiveness
+                handleMouseDown(e);
             } else {
                 handleMouseDown(e);
             }
@@ -716,12 +707,14 @@ const Whiteboard = () => {
                                 draggable={tool === 'select' && selection.selectedId === imageItem.id}
                                 onDragEnd={onTransformEnd}
                                 onDragStart={(e) => {
+                                    console.log('Image drag start:', e);
                                     if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
                                         e.evt.preventDefault();
                                         e.evt.stopPropagation();
                                     }
                                 }}
                                 onDragMove={(e) => {
+                                    console.log('Image drag move:', e);
                                     if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
                                         e.evt.preventDefault();
                                         e.evt.stopPropagation();
@@ -759,12 +752,14 @@ const Whiteboard = () => {
                             draggable: tool === 'select' && selection.selectedId === shape.id,
                             onDragEnd: onTransformEnd,
                             onDragStart: (e: any) => {
+                                console.log('Shape drag start:', e);
                                 if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
                                     e.evt.preventDefault();
                                     e.evt.stopPropagation();
                                 }
                             },
                             onDragMove: (e: any) => {
+                                console.log('Shape drag move:', e);
                                 if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
                                     e.evt.preventDefault();
                                     e.evt.stopPropagation();
@@ -816,12 +811,14 @@ const Whiteboard = () => {
                             draggable={tool === 'select' && selection.selectedId === textItem.id}
                             onDragEnd={onTransformEnd}
                             onDragStart={(e) => {
+                                console.log('Text drag start:', e);
                                 if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
                                     e.evt.preventDefault();
                                     e.evt.stopPropagation();
                                 }
                             }}
                             onDragMove={(e) => {
+                                console.log('Text drag move:', e);
                                 if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
                                     e.evt.preventDefault();
                                     e.evt.stopPropagation();
@@ -864,28 +861,31 @@ const Whiteboard = () => {
                             return newBox;
                         }}
                         enabledAnchors={['middle-left', 'middle-right', 'top-center', 'bottom-center', 'top-left', 'top-right', 'bottom-left', 'bottom-right']}
-                        anchorSize={16}
-                        anchorStrokeWidth={4}
-                        anchorCornerRadius={4}
+                        anchorSize={20}
+                        anchorStrokeWidth={5}
+                        anchorCornerRadius={5}
                         anchorFill="#ffffff"
                         anchorStroke="#0096fd"
                         borderStroke="#0096fd"
-                        borderStrokeWidth={4}
+                        borderStrokeWidth={5}
                         rotateEnabled={true}
                         keepRatio={false}
                         onTransformStart={(e) => {
+                            console.log('Transform start:', e);
                             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
                                 e.evt.preventDefault();
                                 e.evt.stopPropagation();
                             }
                         }}
                         onTransform={(e) => {
+                            console.log('Transform:', e);
                             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
                                 e.evt.preventDefault();
                                 e.evt.stopPropagation();
                             }
                         }}
                         onTransformEnd={(e) => {
+                            console.log('Transform end:', e);
                             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
                                 e.evt.preventDefault();
                                 e.evt.stopPropagation();
