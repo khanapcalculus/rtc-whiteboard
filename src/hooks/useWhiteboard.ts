@@ -27,7 +27,17 @@ const yImages = doc.getArray<string>('images');
 const yShapes = doc.getArray<string>('shapes');
 const yTexts = doc.getArray<string>('texts');
 const yViewState = doc.getMap<number>('viewState');
-const provider = new WebsocketProvider('ws://192.168.31.158:3001', 'whiteboard', doc);
+
+// Determine WebSocket URL based on environment
+const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const wsHost = import.meta.env.PROD 
+    ? 'rtc-whiteboard-websocket.onrender.com'  // Render.com WebSocket URL
+    : 'localhost:3001';  // Local development
+const wsUrl = `${wsProtocol}//${wsHost}`;
+
+console.log('Connecting to WebSocket server at:', wsUrl);
+
+const provider = new WebsocketProvider(wsUrl, 'whiteboard', doc);
 
 // Performance optimization: Throttle function with improved responsiveness for pen tool
 const throttle = (func: Function, limit: number) => {
