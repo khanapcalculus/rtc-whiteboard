@@ -752,8 +752,8 @@ const Whiteboard = () => {
                             x={textItem.x}
                             y={textItem.y}
                             text={textItem.text}
-                            fontSize={textItem.fontSize}
-                            fontFamily={textItem.fontFamily}
+                            fontSize={textItem.fontSize || fontSize}
+                            fontFamily={textItem.fontFamily || fontFamily}
                             fill={textItem.color}
                             draggable={tool === 'select' && selection.selectedId === textItem.id}
                             onDragEnd={onTransformEnd}
@@ -807,7 +807,7 @@ const Whiteboard = () => {
                             lineCap="round"
                             lineJoin="round"
                             globalCompositeOperation={
-                                tool === 'eraser' ? 'destination-out' : 'source-over'
+                                line.tool === 'eraser' ? 'destination-out' : 'source-over'
                             }
                             perfectDrawEnabled={false}
                             listening={false}
