@@ -225,7 +225,14 @@ const Whiteboard = () => {
                 e.evt.preventDefault();
                 e.evt.stopPropagation();
             }
-            handleMouseDown(e);
+            // Add a small delay for touch events to ensure proper handling
+            if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                setTimeout(() => {
+                    handleMouseDown(e);
+                }, 50);
+            } else {
+                handleMouseDown(e);
+            }
             return;
         }
         
@@ -401,7 +408,7 @@ const Whiteboard = () => {
                 // Add a small delay for touch events to ensure proper registration
                 setTimeout(() => {
                     handleMouseDown(e);
-                }, 10);
+                }, 50); // Increased delay for better touch handling
             } else {
                 handleMouseDown(e);
             }
@@ -421,7 +428,7 @@ const Whiteboard = () => {
                 // Add a small delay for touch events to ensure proper registration
                 setTimeout(() => {
                     handleMouseDown(e);
-                }, 10);
+                }, 50); // Increased delay for better touch handling
             } else {
                 handleMouseDown(e);
             }
@@ -440,7 +447,7 @@ const Whiteboard = () => {
                 // Add a small delay for touch events to ensure proper registration
                 setTimeout(() => {
                     handleMouseDown(e);
-                }, 10);
+                }, 50); // Increased delay for better touch handling
             } else {
                 handleMouseDown(e);
             }
@@ -650,7 +657,10 @@ const Whiteboard = () => {
                 onTouchStart={(e) => {
                     e.evt.preventDefault();
                     e.evt.stopPropagation();
-                    onStageMouseDown(e);
+                    // Add a small delay for touch events to ensure proper handling
+                    setTimeout(() => {
+                        onStageMouseDown(e);
+                    }, 10);
                 }}
                 onTouchMove={(e) => {
                     e.evt.preventDefault();
@@ -704,6 +714,12 @@ const Whiteboard = () => {
                                 image={img}
                                 draggable={tool === 'select' && selection.selectedId === imageItem.id}
                                 onDragEnd={onTransformEnd}
+                                onDragStart={(e) => {
+                                    if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                                        e.evt.preventDefault();
+                                        e.evt.stopPropagation();
+                                    }
+                                }}
                                 onClick={onImageClick}
                                 onTap={onImageClick}
                                 onTouchStart={onImageClick}
@@ -712,7 +728,7 @@ const Whiteboard = () => {
                                 rotation={imageItem.rotation || 0}
                                 listening={tool === 'select'}
                                 perfectDrawEnabled={false}
-                                hitStrokeWidth={tool === 'select' ? 10 : 0}
+                                hitStrokeWidth={tool === 'select' ? 20 : 0}
                             />
                         );
                     })}
@@ -729,6 +745,12 @@ const Whiteboard = () => {
                             fill: tool === 'select' ? 'rgba(0,0,0,0.01)' : "transparent",
                             draggable: tool === 'select' && selection.selectedId === shape.id,
                             onDragEnd: onTransformEnd,
+                            onDragStart: (e: any) => {
+                                if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                                    e.evt.preventDefault();
+                                    e.evt.stopPropagation();
+                                }
+                            },
                             onClick: onShapeClick,
                             onTap: onShapeClick,
                             onTouchStart: onShapeClick,
@@ -737,7 +759,7 @@ const Whiteboard = () => {
                             rotation: shape.rotation || 0,
                             listening: tool === 'select',
                             perfectDrawEnabled: false,
-                            hitStrokeWidth: tool === 'select' ? Math.max(shape.strokeWidth, 10) : shape.strokeWidth
+                            hitStrokeWidth: tool === 'select' ? Math.max(shape.strokeWidth, 20) : shape.strokeWidth
                         };
 
                         switch (shape.type) {
@@ -768,6 +790,12 @@ const Whiteboard = () => {
                             fill={textItem.color}
                             draggable={tool === 'select' && selection.selectedId === textItem.id}
                             onDragEnd={onTransformEnd}
+                            onDragStart={(e) => {
+                                if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                                    e.evt.preventDefault();
+                                    e.evt.stopPropagation();
+                                }
+                            }}
                             onClick={onTextClick}
                             onTap={onTextClick}
                             onTouchStart={onTextClick}
@@ -778,7 +806,7 @@ const Whiteboard = () => {
                             rotation={textItem.rotation || 0}
                             listening={tool === 'select'}
                             perfectDrawEnabled={false}
-                            hitStrokeWidth={tool === 'select' ? 10 : 0}
+                            hitStrokeWidth={tool === 'select' ? 20 : 0}
                         />
                     ))}
 
@@ -798,6 +826,16 @@ const Whiteboard = () => {
                             }
                             return newBox;
                         }}
+                        enabledAnchors={['middle-left', 'middle-right', 'top-center', 'bottom-center', 'top-left', 'top-right', 'bottom-left', 'bottom-right']}
+                        anchorSize={10}
+                        anchorStrokeWidth={2}
+                        anchorCornerRadius={2}
+                        anchorFill="#ffffff"
+                        anchorStroke="#0096fd"
+                        borderStroke="#0096fd"
+                        borderStrokeWidth={2}
+                        rotateEnabled={true}
+                        keepRatio={false}
                     />
                 </Layer>
 

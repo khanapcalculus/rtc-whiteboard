@@ -5,7 +5,7 @@ interface StrokeSelectorProps {
     onStrokeChange: (stroke: number) => void;
 }
 
-const strokes = Array.from({ length: 48 }, (_, i) => ({
+const strokes = Array.from({ length: 16 }, (_, i) => ({
     width: i + 1,
     label: `${i + 1}px`
 }));

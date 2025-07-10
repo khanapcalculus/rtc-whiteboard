@@ -335,7 +335,6 @@ export const useWhiteboard = () => {
 
             setCurrentLine(newLine);
         } else if (['rectangle', 'circle', 'line', 'ellipse'].includes(tool)) {
-            console.log('Shape tool selected:', tool); // Debug log
             // Check if we're already at the limit
             if (syncedShapes.length >= 1000) {
                 console.warn('Shape limit reached. Cannot add more shape elements.');
@@ -343,13 +342,9 @@ export const useWhiteboard = () => {
             }
 
             const newShape = ShapeTool.startDrawing(tool as ShapeType, e, stagePos, color, strokeWidth);
-            console.log('ShapeTool.startDrawing result:', newShape); // Debug log
             if (newShape) {
-                console.log('Starting shape:', newShape); // Debug log
                 // Only set as current shape for preview, don't add to syncedShapes yet
                 setCurrentShape(newShape);
-            } else {
-                console.log('ShapeTool.startDrawing returned null'); // Debug log
             }
         } else if (tool === 'text') {
             // Check if we're already at the limit
@@ -431,7 +426,6 @@ export const useWhiteboard = () => {
             });
         } else if (['rectangle', 'circle', 'line', 'ellipse'].includes(tool) && currentShape) {
             const updatedShape = ShapeTool.updateDrawing(currentShape, e, stagePos);
-            console.log('Updating shape:', updatedShape); // Debug log
             setCurrentShape(updatedShape);
         } else if (tool === 'eraser' && eraserState.isErasing) {
             const updatedEraserState = EraserTool.handleMouseMove(e, eraserState, stagePos);
@@ -451,7 +445,6 @@ export const useWhiteboard = () => {
             saveToHistory();
             setCurrentLine(null);
         } else if (['rectangle', 'circle', 'line', 'ellipse'].includes(tool) && currentShape) {
-            console.log('Finishing shape:', currentShape); // Debug log
             if (ShapeTool.shouldSyncShape(currentShape)) {
                 try {
                     // Add the completed shape to synced shapes

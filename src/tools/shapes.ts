@@ -34,13 +34,8 @@ export class ShapeTool {
         color: string,
         strokeWidth: number
     ): Shape | null {
-        console.log('ShapeTool.startDrawing called with:', { shapeType, e, stagePos, color, strokeWidth }); // Debug log
-        console.log('Event target:', e.target); // Debug log
-        console.log('Event target type:', e.target.getType()); // Debug log
         const stage = e.target.getStage();
-        console.log('Stage:', stage); // Debug log
         const pos = stage.getPointerPosition();
-        console.log('Pointer position:', pos); // Debug log
         if (!pos) return null;
 
         const adjustedX = pos.x - stagePos.x;
