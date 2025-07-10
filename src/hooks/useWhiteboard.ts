@@ -27,7 +27,38 @@ const yImages = doc.getArray<string>('images');
 const yShapes = doc.getArray<string>('shapes');
 const yTexts = doc.getArray<string>('texts');
 const yViewState = doc.getMap<number>('viewState');
-const provider = new WebsocketProvider('ws://192.168.31.158:3001', 'whiteboard', doc);
+
+// Determine WebSocket URL based on environment
+const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const wsHost = import.meta.env.PROD 
+    ? 'rtc-whiteboard-websocket.onrender.com'  // Production WebSocket URL
+    : window.location.hostname + ':3001';  // Local development
+const wsUrl = `${wsProtocol}//${wsHost}`;
+
+console.log('Environment:', import.meta.env.PROD ? 'production' : 'development');
+console.log('Protocol:', wsProtocol);
+console.log('Connecting to WebSocket server at:', wsUrl);
+
+const provider = new WebsocketProvider(wsUrl, 'whiteboard', doc);
+
+// Add connection status logging
+provider.on('status', ({ status }: { status: string }) => {
+    console.log('WebSocket connection status:', status);
+    if (status === 'connected') {
+        console.log('Successfully connected to WebSocket server');
+    } else if (status === 'disconnected') {
+        console.log('Disconnected from WebSocket server. Attempting to reconnect...');
+    }
+});
+
+provider.on('sync', (isSynced: boolean) => {
+    console.log('Document sync status:', isSynced ? 'synchronized' : 'synchronizing');
+});
+
+// Handle connection errors
+provider.on('connection-error', (error: Error) => {
+    console.error('WebSocket connection error:', error);
+});
 
 // Performance optimization: Throttle function with improved responsiveness for pen tool
 const throttle = (func: Function, limit: number) => {
