@@ -35,9 +35,30 @@ const wsHost = import.meta.env.PROD
     : 'localhost:3001';  // Local development
 const wsUrl = `${wsProtocol}//${wsHost}`;
 
+console.log('Environment:', import.meta.env.PROD ? 'production' : 'development');
+console.log('Protocol:', wsProtocol);
 console.log('Connecting to WebSocket server at:', wsUrl);
 
 const provider = new WebsocketProvider(wsUrl, 'whiteboard', doc);
+
+// Add connection status logging
+provider.on('status', ({ status }: { status: string }) => {
+    console.log('WebSocket connection status:', status);
+    if (status === 'connected') {
+        console.log('Successfully connected to WebSocket server');
+    } else if (status === 'disconnected') {
+        console.log('Disconnected from WebSocket server. Attempting to reconnect...');
+    }
+});
+
+provider.on('sync', (isSynced: boolean) => {
+    console.log('Document sync status:', isSynced ? 'synchronized' : 'synchronizing');
+});
+
+// Handle connection errors
+provider.on('connection-error', (error: Error) => {
+    console.error('WebSocket connection error:', error);
+});
 
 // Performance optimization: Throttle function with improved responsiveness for pen tool
 const throttle = (func: Function, limit: number) => {
