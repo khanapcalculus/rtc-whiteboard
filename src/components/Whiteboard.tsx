@@ -642,59 +642,45 @@ const Whiteboard = () => {
                 onMouseMove={onStageMouseMove}
                 onMouseUp={onStageMouseUp}
                 onTouchStart={(e) => {
-                    // For touch events, ensure proper handling
-                    if (tool === 'select') {
-                        // Add a small delay for touch selection to work properly
-                        setTimeout(() => {
-                            onStageMouseDown(e);
-                        }, 10);
-                    } else {
-                        onStageMouseDown(e);
-                    }
+                    e.evt.preventDefault();
+                    e.evt.stopPropagation();
+                    onStageMouseDown(e);
                 }}
-                onTouchMove={onStageMouseMove}
-                onTouchEnd={onStageMouseUp}
-                draggable={false} // Disable Konva's draggable, use custom pan
+                onTouchMove={(e) => {
+                    e.evt.preventDefault();
+                    e.evt.stopPropagation();
+                    onStageMouseMove(e);
+                }}
+                onTouchEnd={(e) => {
+                    e.evt.preventDefault();
+                    e.evt.stopPropagation();
+                    onStageMouseUp(e);
+                }}
+                draggable={false}
                 onDragStart={onStageDragStart}
                 onDragMove={onStageDragMove}
                 onDragEnd={onStageDragEnd}
                 x={stagePos.x}
                 y={stagePos.y}
                 style={{
-                    touchAction: tool === 'pan' ? 'none' : tool === 'select' ? 'none' : 'auto' // Dynamic touch action
+                    touchAction: 'none',
+                    msTouchAction: 'none',
+                    WebkitTouchCallout: 'none',
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none'
                 }}
                 scaleX={1}
                 scaleY={1}
                 listening={true}
-                perfectDrawEnabled={false} // Performance optimization for smoother drawing
+                perfectDrawEnabled={false}
             >
+                {/* Background Layer */}
                 <Layer
-                    listening={true}
+                    listening={tool === 'select'}
                     perfectDrawEnabled={false}
                     imageSmoothingEnabled={true}
-                    hitGraphEnabled={true}
+                    hitGraphEnabled={tool === 'select'}
                 >
-                    {/* Render Lines (behind everything else) */}
-                    {lines.map((line, index) => (
-                        <Line
-                            key={line.id || `line-${index}`}
-                            points={line.points}
-                            stroke={line.color || '#000000'}
-                            strokeWidth={line.strokeWidth || 2.5}
-                            tension={0.1} // Further reduced tension for smoother rapid drawing
-                            lineCap="round"
-                            lineJoin="round"
-                            globalCompositeOperation="source-over"
-                            perfectDrawEnabled={false} // Performance optimization
-                            listening={false} // Performance optimization
-                            shadowForStrokeEnabled={false} // Performance optimization
-                            hitStrokeWidth={0} // Performance optimization
-                            bezier={false} // Disable Konva's bezier since we're doing our own smoothing
-                            closed={false}
-                            fillEnabled={false}
-                        />
-                    ))}
-
                     {/* Render Images */}
                     {images.map((imageItem) => {
                         const img = imageElements.get(imageItem.id);
@@ -727,7 +713,6 @@ const Whiteboard = () => {
 
                     {/* Render Shapes */}
                     {shapes.map((shape) => {
-                        console.log('Rendering shape:', shape.id, 'listening:', tool === 'select', 'draggable:', tool === 'select' && selection.selectedId === shape.id);
                         const commonProps = {
                             id: shape.id,
                             name: "shape",
@@ -751,148 +736,113 @@ const Whiteboard = () => {
 
                         switch (shape.type) {
                             case 'rectangle':
-                                return (
-                                    <Rect
-                                        key={shape.id}
-                                        {...commonProps}
-                                        width={shape.width || 0}
-                                        height={shape.height || 0}
-                                    />
-                                );
+                                return <Rect key={shape.id} {...commonProps} width={shape.width || 0} height={shape.height || 0} />;
                             case 'circle':
-                                return (
-                                    <Circle
-                                        key={shape.id}
-                                        {...commonProps}
-                                        radius={shape.radius || 0}
-                                    />
-                                );
+                                return <Circle key={shape.id} {...commonProps} radius={shape.radius || 0} />;
                             case 'ellipse':
-                                return (
-                                    <Ellipse
-                                        key={shape.id}
-                                        {...commonProps}
-                                        radiusX={shape.radiusX || 0}
-                                        radiusY={shape.radiusY || 0}
-                                    />
-                                );
+                                return <Ellipse key={shape.id} {...commonProps} radiusX={shape.radiusX || 0} radiusY={shape.radiusY || 0} />;
                             case 'line':
-                                return (
-                                    <Line
-                                        key={shape.id}
-                                        {...commonProps}
-                                        points={shape.points || []}
-                                        lineCap="round"
-                                        x={0}
-                                        y={0}
-                                    />
-                                );
+                                return <Line key={shape.id} {...commonProps} points={shape.points || []} />;
                             default:
                                 return null;
                         }
                     })}
 
-                    {/* Render Text */}
-                    {texts.map((textItem) => {
-                        // Don't render text that's currently being edited as new text
-                        if (editingText === 'new' && textItem.text === '') {
-                            return null;
-                        }
-                        
-                        return (
-                            <Text
-                                key={textItem.id}
-                                id={textItem.id}
-                                name="text"
-                                x={textItem.x}
-                                y={textItem.y}
-                                text={textItem.text}
-                                fontSize={textItem.fontSize}
-                                fontFamily={textItem.fontFamily}
-                                fill={textItem.color}
-                                scaleX={textItem.scaleX || 1}
-                                scaleY={textItem.scaleY || 1}
-                                rotation={textItem.rotation || 0}
-                                draggable={tool === 'select' && selection.selectedId === textItem.id}
-                                onDragEnd={onTransformEnd}
-                                onClick={onTextClick}
-                                onTap={onTextClick}
-                                onTouchStart={onTextClick}
-                                onDblClick={(e) => {
-                                    console.log('Double click on text:', textItem.id);
-                                    onTextDoubleClick(e);
-                                }}
-                                onDblTap={onTextDoubleClick}
-                                onMouseDown={(e) => {
-                                    // Prevent event bubbling to stage
-                                    e.cancelBubble = true;
-                                    if (e.evt) {
-                                        e.evt.stopPropagation();
-                                    }
-                                }}
-                                listening={true} // Always listen for text events
-                                perfectDrawEnabled={false}
-                                visible={editingText !== textItem.id} // Hide text being edited
-                            />
-                        );
-                    })}
+                    {/* Render Texts */}
+                    {texts.map((textItem) => (
+                        <Text
+                            key={textItem.id}
+                            id={textItem.id}
+                            name="text"
+                            x={textItem.x}
+                            y={textItem.y}
+                            text={textItem.text}
+                            fontSize={textItem.fontSize || fontSize}
+                            fontFamily={textItem.fontFamily || fontFamily}
+                            fill={textItem.color}
+                            draggable={tool === 'select' && selection.selectedId === textItem.id}
+                            onDragEnd={onTransformEnd}
+                            onClick={onTextClick}
+                            onTap={onTextClick}
+                            onTouchStart={onTextClick}
+                            onDblClick={onTextDoubleClick}
+                            onDblTap={onTextDoubleClick}
+                            scaleX={textItem.scaleX || 1}
+                            scaleY={textItem.scaleY || 1}
+                            rotation={textItem.rotation || 0}
+                            listening={tool === 'select'}
+                            perfectDrawEnabled={false}
+                            hitStrokeWidth={tool === 'select' ? 10 : 0}
+                        />
+                    ))}
 
-                    {/* Render Eraser Path */}
-                    {tool === 'eraser' && eraserState.isErasing && eraserState.eraserPath.length > 2 && (
+                    {/* Selection Transformer */}
+                    <Transformer
+                        ref={transformerRef}
+                        boundBoxFunc={(oldBox, newBox) => {
+                            const minSize = 5;
+                            const maxSize = 1000;
+                            if (
+                                newBox.width < minSize ||
+                                newBox.height < minSize ||
+                                newBox.width > maxSize ||
+                                newBox.height > maxSize
+                            ) {
+                                return oldBox;
+                            }
+                            return newBox;
+                        }}
+                    />
+                </Layer>
+
+                {/* Drawing Layer (always on top) */}
+                <Layer
+                    listening={false}
+                    perfectDrawEnabled={false}
+                >
+                    {/* Render Lines */}
+                    {lines.map((line, index) => (
                         <Line
-                            points={eraserState.eraserPath}
-                            stroke="#ff0000"
-                            strokeWidth={3}
+                            key={line.id || `line-${index}`}
+                            points={line.points}
+                            stroke={line.color || '#000000'}
+                            strokeWidth={line.strokeWidth || 2.5}
+                            tension={0.1}
                             lineCap="round"
                             lineJoin="round"
-                            dash={[5, 5]}
-                            opacity={0.7}
-                            listening={false}
+                            globalCompositeOperation="source-over"
                             perfectDrawEnabled={false}
+                            listening={false}
+                            shadowForStrokeEnabled={false}
+                            hitStrokeWidth={0}
+                            bezier={false}
+                            closed={false}
+                            fillEnabled={false}
                         />
-                    )}
+                    ))}
 
-                    {/* Transformer for selection */}
-                    {tool === 'select' && (
-                        <Transformer
-                            ref={transformerRef}
-                            onTransformEnd={onTransformEnd}
-                            onTransform={(e) => {
-                                // Don't update during transform, only on transform end
-                                // This prevents the jumping issue
-                            }}
-                            onDragEnd={onTransformEnd}
-                            boundBoxFunc={(oldBox, newBox) => {
-                                // Limit resize to prevent negative dimensions
-                                if (newBox.width < 5 || newBox.height < 5) {
-                                    return oldBox;
-                                }
-                                return newBox;
-                            }}
-                            enabledAnchors={['top-left', 'top-right', 'bottom-left', 'bottom-right', 'middle-left', 'middle-right', 'top-center', 'bottom-center']}
-                            borderEnabled={true}
-                            anchorSize={24}
-                            anchorStroke="#007bff"
-                            anchorFill="#ffffff"
-                            anchorStrokeWidth={3}
-                            anchorCornerRadius={6}
-                            borderStroke="#007bff"
-                            borderStrokeWidth={2}
-                            borderDash={[5, 5]}
-                            keepRatio={false}
-                            centeredScaling={false}
-                            ignoreStroke={true}
-                            useSingleNodeRotation={false}
-                            shouldOverdrawWholeArea={false}
-                            flipEnabled={false}
-                            resizeEnabled={true}
-                            rotateEnabled={true}
-                            anchorDragBoundFunc={(oldPos, newPos) => {
-                                // Allow free movement of anchors
-                                return newPos;
-                            }}
+                    {/* Current Drawing Line */}
+                    {/* This component is not defined in the original file, so it will be commented out or removed if not needed.
+                        Assuming it's a placeholder for a drawing line state or a component that will be added later.
+                        For now, it's commented out as it's not part of the original file's state or props. */}
+                    {/* {currentLine && (
+                        <Line
+                            points={currentLine.points}
+                            stroke={currentLine.color || '#000000'}
+                            strokeWidth={currentLine.strokeWidth || 2.5}
+                            tension={0.1}
+                            lineCap="round"
+                            lineJoin="round"
+                            globalCompositeOperation="source-over"
+                            perfectDrawEnabled={false}
+                            listening={false}
+                            shadowForStrokeEnabled={false}
+                            hitStrokeWidth={0}
+                            bezier={false}
+                            closed={false}
+                            fillEnabled={false}
                         />
-                    )}
+                    )} */}
                 </Layer>
             </Stage>
         </div>

@@ -282,18 +282,49 @@ export const useWhiteboard = () => {
     }, []);
 
     const handleMouseDown = useCallback((e: any) => {
-        console.log('handleMouseDown called with tool:', tool, 'target:', e.target.getType(), 'target name:', e.target.name?.());
-        
+        if (e.evt) {
+            e.evt.preventDefault();
+            e.evt.stopPropagation();
+        }
+
         if (tool === 'select') {
-            console.log('Selection tool - before:', selection);
-            SelectionTool.handleSelection(e.target, selection, (newSelection) => {
-                console.log('Selection tool - after:', newSelection);
-                setSelection(newSelection);
-            });
+            // Handle selection
+            const target = e.target;
+            const stage = e.target.getStage();
+            
+            // If clicking on stage background, clear selection
+            if (target === stage) {
+                setSelection({ selectedId: null, selectedType: null });
+                return;
+            }
+            
+            // If clicking on a selectable item, update selection
+            const clickedOnShape = target.hasName('shape') || target.hasName('image') || target.hasName('text');
+            if (clickedOnShape) {
+                const id = target.id();
+                const type = target.hasName('shape') ? 'shape' : 
+                           target.hasName('image') ? 'image' : 'text';
+                setSelection({ selectedId: id, selectedType: type });
+                return;
+            }
             return;
         }
 
-        if (tool === 'text') {
+        isDrawing.current = true;
+
+        if (tool === 'pen') {
+            const newLine = PenTool.handleMouseDown(e, stagePos, color, strokeWidth);
+            if (newLine) {
+                setCurrentLine(newLine);
+                setSyncedLines(prevLines => [...prevLines, newLine]);
+            }
+        } else if (['rectangle', 'circle', 'line', 'ellipse'].includes(tool)) {
+            const newShape = ShapeTool.startDrawing(tool as ShapeType, e, stagePos, color, strokeWidth);
+            if (newShape) {
+                setCurrentShape(newShape);
+                setSyncedShapes(prevShapes => [...prevShapes, newShape]);
+            }
+        } else if (tool === 'text') {
             const pos = e.target.getStage().getPointerPosition();
             if (pos) {
                 const adjustedPos = {
@@ -301,46 +332,34 @@ export const useWhiteboard = () => {
                     y: pos.y - stagePos.y
                 };
                 
-                const newText = TextTool.createText(
-                    adjustedPos.x,
-                    adjustedPos.y,
-                    '', // Start with empty text
+                const newText = {
+                    id: `text-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    text: '',
+                    x: adjustedPos.x,
+                    y: adjustedPos.y,
                     color,
                     fontSize,
                     fontFamily
-                );
+                };
                 
-                // Store the new text ID for later reference
+                setSyncedTexts(prevTexts => [...prevTexts, newText]);
                 lastCreatedTextId.current = newText.id;
-                yTexts.push([JSON.stringify(newText)]);
-                saveToHistory();
             }
-            return;
-        }
-
-        if (tool === 'eraser') {
-            const newEraserState = EraserTool.handleMouseDown(e, stagePos);
-            setEraserState(newEraserState);
-            isDrawing.current = true;
-            return;
-        }
-
-        if (isDrawing.current) return;
-        
-        isDrawing.current = true;
-
-        if (tool === 'pen') {
-            const newLine = PenTool.handleMouseDown(e, stagePos, color, strokeWidth);
-            if (newLine) {
-                setCurrentLine(newLine);
-            }
-        } else if (['rectangle', 'circle', 'line', 'ellipse'].includes(tool)) {
-            const newShape = ShapeTool.startDrawing(tool as ShapeType, e, stagePos, color, strokeWidth);
-            if (newShape) {
-                setCurrentShape(newShape);
+        } else if (tool === 'eraser') {
+            const stage = e.target.getStage();
+            const pos = stage.getPointerPosition();
+            if (pos) {
+                const adjustedPos = {
+                    x: pos.x - stagePos.x,
+                    y: pos.y - stagePos.y
+                };
+                setEraserState({
+                    isErasing: true,
+                    eraserPath: [adjustedPos.x, adjustedPos.y]
+                });
             }
         }
-    }, [tool, stagePos, color, strokeWidth, fontSize, fontFamily, selection, saveToHistory]);
+    }, [tool, color, strokeWidth, fontSize, fontFamily, stagePos]);
 
     // Throttled mouse move for better performance
     const handleMouseMove = useCallback(throttle((e: any) => {
