@@ -135,9 +135,10 @@ const Whiteboard = () => {
             // Only prevent default if it's not a toolbar interaction or text input
             if (!isToolbarElement && !isTextInput && e.touches.length > 0) {
                 if (tool === 'select') {
-                    // For selection tool, be more permissive to allow transformer interactions
-                    // Only prevent default on touchstart to avoid conflicts
-                    if (e.type === 'touchstart') {
+                    // For selection tool, be very permissive to allow all interactions
+                    // Only prevent default on touchstart and only if it's not on a Konva element
+                    const isKonvaElement = target.closest('canvas') || target.tagName === 'CANVAS';
+                    if (e.type === 'touchstart' && !isKonvaElement) {
                         e.preventDefault();
                     }
                 } else if (tool === 'pen') {
@@ -393,7 +394,7 @@ const Whiteboard = () => {
     };
 
     const onShapeClick = (e: any) => {
-        console.log('onShapeClick called with tool:', tool, 'target:', e.target.id(), 'name:', e.target.name());
+        console.log('onShapeClick called with tool:', tool, 'target:', e.target.id(), 'name:', e.target.name(), 'event type:', e.evt?.type);
         if (tool === 'select') {
             e.cancelBubble = true;
             if (e.evt) {
@@ -402,16 +403,18 @@ const Whiteboard = () => {
             }
             // For touch events, ensure proper selection with immediate handling
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                console.log('Handling touch shape click');
                 // Immediate handling for better touch responsiveness
                 handleMouseDown(e);
             } else {
+                console.log('Handling mouse shape click');
                 handleMouseDown(e);
             }
         }
     };
 
     const onImageClick = (e: any) => {
-        console.log('onImageClick called with tool:', tool, 'target:', e.target.id(), 'name:', e.target.name());
+        console.log('onImageClick called with tool:', tool, 'target:', e.target.id(), 'name:', e.target.name(), 'event type:', e.evt?.type);
         if (tool === 'select') {
             e.cancelBubble = true;
             if (e.evt) {
@@ -420,15 +423,18 @@ const Whiteboard = () => {
             }
             // For touch events, ensure proper selection with immediate handling
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                console.log('Handling touch image click');
                 // Immediate handling for better touch responsiveness
                 handleMouseDown(e);
             } else {
+                console.log('Handling mouse image click');
                 handleMouseDown(e);
             }
         }
     };
 
     const onTextClick = (e: any) => {
+        console.log('onTextClick called with tool:', tool, 'target:', e.target.id(), 'name:', e.target.name(), 'event type:', e.evt?.type);
         if (tool === 'select') {
             e.cancelBubble = true;
             if (e.evt) {
@@ -437,9 +443,11 @@ const Whiteboard = () => {
             }
             // For touch events, ensure proper selection with immediate handling
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                console.log('Handling touch text click');
                 // Immediate handling for better touch responsiveness
                 handleMouseDown(e);
             } else {
+                console.log('Handling mouse text click');
                 handleMouseDown(e);
             }
         }
@@ -646,6 +654,7 @@ const Whiteboard = () => {
                 onMouseMove={onStageMouseMove}
                 onMouseUp={onStageMouseUp}
                 onTouchStart={(e) => {
+                    console.log('Stage touch start:', e.evt.type, 'tool:', tool);
                     e.evt.preventDefault();
                     e.evt.stopPropagation();
                     // Add a small delay for touch events to ensure proper handling
@@ -654,11 +663,13 @@ const Whiteboard = () => {
                     }, 10);
                 }}
                 onTouchMove={(e) => {
+                    console.log('Stage touch move:', e.evt.type, 'tool:', tool);
                     e.evt.preventDefault();
                     e.evt.stopPropagation();
                     onStageMouseMove(e);
                 }}
                 onTouchEnd={(e) => {
+                    console.log('Stage touch end:', e.evt.type, 'tool:', tool);
                     e.evt.preventDefault();
                     e.evt.stopPropagation();
                     onStageMouseUp(e);

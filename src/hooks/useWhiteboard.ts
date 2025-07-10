@@ -281,18 +281,22 @@ export const useWhiteboard = () => {
     }, []);
 
     const handleMouseDown = useCallback((e: any) => {
+        console.log('handleMouseDown called with tool:', tool, 'event type:', e.evt?.type, 'target:', e.target?.getType?.());
+        
         if (e.evt) {
             e.evt.preventDefault();
             e.evt.stopPropagation();
         }
 
         if (tool === 'select') {
+            console.log('Selection tool - handling mouse down');
             // Handle selection
             const target = e.target;
             const stage = e.target.getStage();
             
             // If clicking on stage background, clear selection
             if (target === stage) {
+                console.log('Clicking on stage background - clearing selection');
                 setSelection({ selectedId: null, selectedType: null });
                 return;
             }
@@ -303,9 +307,11 @@ export const useWhiteboard = () => {
                 const id = target.id();
                 const type = target.hasName('shape') ? 'shape' : 
                            target.hasName('image') ? 'image' : 'text';
+                console.log('Clicking on selectable item - setting selection:', { id, type });
                 setSelection({ selectedId: id, selectedType: type });
                 return;
             }
+            console.log('Clicking on non-selectable item');
             return;
         }
 
