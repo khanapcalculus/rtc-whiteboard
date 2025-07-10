@@ -225,11 +225,11 @@ const Whiteboard = () => {
                 e.evt.preventDefault();
                 e.evt.stopPropagation();
             }
-            // Add a longer delay for touch events to ensure proper handling
+            // Shorter delay for touch events to ensure proper handling
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
                 setTimeout(() => {
                     handleMouseDown(e);
-                }, 100);
+                }, 50);
             } else {
                 handleMouseDown(e);
             }
@@ -403,12 +403,12 @@ const Whiteboard = () => {
                 e.evt.preventDefault();
                 e.evt.stopPropagation();
             }
-            // For touch events, ensure proper selection
+            // For touch events, ensure proper selection with shorter delay
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
-                // Add a longer delay for touch events to ensure proper registration
+                // Shorter delay for better touch responsiveness
                 setTimeout(() => {
                     handleMouseDown(e);
-                }, 100); // Increased delay for better touch handling
+                }, 50);
             } else {
                 handleMouseDown(e);
             }
@@ -423,12 +423,12 @@ const Whiteboard = () => {
                 e.evt.preventDefault();
                 e.evt.stopPropagation();
             }
-            // For touch events, ensure proper selection
+            // For touch events, ensure proper selection with shorter delay
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
-                // Add a longer delay for touch events to ensure proper registration
+                // Shorter delay for better touch responsiveness
                 setTimeout(() => {
                     handleMouseDown(e);
-                }, 100); // Increased delay for better touch handling
+                }, 50);
             } else {
                 handleMouseDown(e);
             }
@@ -442,12 +442,12 @@ const Whiteboard = () => {
                 e.evt.preventDefault();
                 e.evt.stopPropagation();
             }
-            // For touch events, ensure proper selection
+            // For touch events, ensure proper selection with shorter delay
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
-                // Add a longer delay for touch events to ensure proper registration
+                // Shorter delay for better touch responsiveness
                 setTimeout(() => {
                     handleMouseDown(e);
-                }, 100); // Increased delay for better touch handling
+                }, 50);
             } else {
                 handleMouseDown(e);
             }
@@ -672,7 +672,7 @@ const Whiteboard = () => {
                     e.evt.stopPropagation();
                     onStageMouseUp(e);
                 }}
-                draggable={false}
+                draggable={tool === 'pan'}
                 onDragStart={onStageDragStart}
                 onDragMove={onStageDragMove}
                 onDragEnd={onStageDragEnd}
@@ -683,7 +683,8 @@ const Whiteboard = () => {
                     msTouchAction: 'none',
                     WebkitTouchCallout: 'none',
                     WebkitUserSelect: 'none',
-                    userSelect: 'none'
+                    userSelect: 'none',
+                    cursor: tool === 'pan' ? 'grab' : 'default'
                 }}
                 scaleX={1}
                 scaleY={1}
@@ -720,9 +721,21 @@ const Whiteboard = () => {
                                         e.evt.stopPropagation();
                                     }
                                 }}
+                                onDragMove={(e) => {
+                                    if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                                        e.evt.preventDefault();
+                                        e.evt.stopPropagation();
+                                    }
+                                }}
                                 onClick={onImageClick}
                                 onTap={onImageClick}
                                 onTouchStart={onImageClick}
+                                onTouchMove={(e) => {
+                                    if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                                        e.evt.preventDefault();
+                                        e.evt.stopPropagation();
+                                    }
+                                }}
                                 scaleX={imageItem.scaleX || 1}
                                 scaleY={imageItem.scaleY || 1}
                                 rotation={imageItem.rotation || 0}
@@ -751,9 +764,21 @@ const Whiteboard = () => {
                                     e.evt.stopPropagation();
                                 }
                             },
+                            onDragMove: (e: any) => {
+                                if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                                    e.evt.preventDefault();
+                                    e.evt.stopPropagation();
+                                }
+                            },
                             onClick: onShapeClick,
                             onTap: onShapeClick,
                             onTouchStart: onShapeClick,
+                            onTouchMove: (e: any) => {
+                                if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                                    e.evt.preventDefault();
+                                    e.evt.stopPropagation();
+                                }
+                            },
                             scaleX: shape.scaleX || 1,
                             scaleY: shape.scaleY || 1,
                             rotation: shape.rotation || 0,
@@ -796,9 +821,21 @@ const Whiteboard = () => {
                                     e.evt.stopPropagation();
                                 }
                             }}
+                            onDragMove={(e) => {
+                                if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                                    e.evt.preventDefault();
+                                    e.evt.stopPropagation();
+                                }
+                            }}
                             onClick={onTextClick}
                             onTap={onTextClick}
                             onTouchStart={onTextClick}
+                            onTouchMove={(e) => {
+                                if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                                    e.evt.preventDefault();
+                                    e.evt.stopPropagation();
+                                }
+                            }}
                             onDblClick={onTextDoubleClick}
                             onDblTap={onTextDoubleClick}
                             scaleX={textItem.scaleX || 1}
@@ -827,15 +864,34 @@ const Whiteboard = () => {
                             return newBox;
                         }}
                         enabledAnchors={['middle-left', 'middle-right', 'top-center', 'bottom-center', 'top-left', 'top-right', 'bottom-left', 'bottom-right']}
-                        anchorSize={12}
-                        anchorStrokeWidth={3}
-                        anchorCornerRadius={3}
+                        anchorSize={16}
+                        anchorStrokeWidth={4}
+                        anchorCornerRadius={4}
                         anchorFill="#ffffff"
                         anchorStroke="#0096fd"
                         borderStroke="#0096fd"
-                        borderStrokeWidth={3}
+                        borderStrokeWidth={4}
                         rotateEnabled={true}
                         keepRatio={false}
+                        onTransformStart={(e) => {
+                            if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                                e.evt.preventDefault();
+                                e.evt.stopPropagation();
+                            }
+                        }}
+                        onTransform={(e) => {
+                            if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                                e.evt.preventDefault();
+                                e.evt.stopPropagation();
+                            }
+                        }}
+                        onTransformEnd={(e) => {
+                            if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
+                                e.evt.preventDefault();
+                                e.evt.stopPropagation();
+                            }
+                            onTransformEnd(e);
+                        }}
                     />
                 </Layer>
 
