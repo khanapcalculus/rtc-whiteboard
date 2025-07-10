@@ -6,7 +6,6 @@ import { EraserTool, type EraserState } from '../tools/eraser';
 import { HistoryManager, type WhiteboardState } from '../tools/history';
 import { ImageTool, type ImageItem } from '../tools/image';
 import { PanTool } from '../tools/pan';
-import { PenTool } from '../tools/pen';
 import { SelectionTool, type SelectionState } from '../tools/selection';
 import { ShapeTool, type Shape, type ShapeType } from '../tools/shapes';
 import { TextTool, type TextItem } from '../tools/text';
@@ -313,18 +312,52 @@ export const useWhiteboard = () => {
         isDrawing.current = true;
 
         if (tool === 'pen') {
-            const newLine = PenTool.handleMouseDown(e, stagePos, color, strokeWidth);
-            if (newLine) {
-                setCurrentLine(newLine);
-                setSyncedLines(prevLines => [...prevLines, newLine]);
+            // Check if we're already at the limit
+            if (syncedLines.length >= 2000) {
+                console.warn('Line limit reached. Cannot add more line elements.');
+                return;
             }
+
+            const stage = e.target.getStage();
+            const pos = stage.getPointerPosition();
+            if (!pos) return;
+
+            const adjustedX = pos.x - stagePos.x;
+            const adjustedY = pos.y - stagePos.y;
+
+            const newLine = {
+                id: `line-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                tool: 'pen' as const,
+                points: [adjustedX, adjustedY],
+                color,
+                strokeWidth
+            };
+
+            setCurrentLine(newLine);
         } else if (['rectangle', 'circle', 'line', 'ellipse'].includes(tool)) {
+            console.log('Shape tool selected:', tool); // Debug log
+            // Check if we're already at the limit
+            if (syncedShapes.length >= 1000) {
+                console.warn('Shape limit reached. Cannot add more shape elements.');
+                return;
+            }
+
             const newShape = ShapeTool.startDrawing(tool as ShapeType, e, stagePos, color, strokeWidth);
+            console.log('ShapeTool.startDrawing result:', newShape); // Debug log
             if (newShape) {
+                console.log('Starting shape:', newShape); // Debug log
+                // Only set as current shape for preview, don't add to syncedShapes yet
                 setCurrentShape(newShape);
-                setSyncedShapes(prevShapes => [...prevShapes, newShape]);
+            } else {
+                console.log('ShapeTool.startDrawing returned null'); // Debug log
             }
         } else if (tool === 'text') {
+            // Check if we're already at the limit
+            if (syncedTexts.length >= 1000) {
+                console.warn('Text limit reached. Cannot add more text elements.');
+                return;
+            }
+
             const pos = e.target.getStage().getPointerPosition();
             if (pos) {
                 const adjustedPos = {
@@ -342,8 +375,16 @@ export const useWhiteboard = () => {
                     fontFamily
                 };
                 
-                setSyncedTexts(prevTexts => [...prevTexts, newText]);
-                lastCreatedTextId.current = newText.id;
+                try {
+                    setSyncedTexts(prevTexts => [...prevTexts, newText]);
+                    yTexts.push([JSON.stringify(newText)]);
+                    lastCreatedTextId.current = newText.id;
+                } catch (error) {
+                    console.error('Error adding text:', error);
+                    // Fallback: just update local state
+                    setSyncedTexts(prevTexts => [...prevTexts, newText]);
+                    lastCreatedTextId.current = newText.id;
+                }
             }
         } else if (tool === 'eraser') {
             const stage = e.target.getStage();
@@ -359,7 +400,7 @@ export const useWhiteboard = () => {
                 });
             }
         }
-    }, [tool, color, strokeWidth, fontSize, fontFamily, stagePos]);
+    }, [tool, color, strokeWidth, fontSize, fontFamily, stagePos, syncedTexts.length, syncedShapes.length, syncedLines.length]);
 
     // Throttled mouse move for better performance
     const handleMouseMove = useCallback(throttle((e: any) => {
@@ -371,17 +412,32 @@ export const useWhiteboard = () => {
         }
         lastMouseMoveTime.current = now;
         
-        if (tool === 'pen' && currentLine) {
-            const updatedLine = PenTool.handleMouseMove(e, currentLine, stagePos);
-            setCurrentLine(updatedLine);
+        if (tool === 'pen') {
+            // Use functional update to always get the latest currentLine
+            setCurrentLine(prev => {
+                if (!prev) return prev;
+
+                const stage = e.target.getStage();
+                const pos = stage.getPointerPosition();
+                if (!pos) return prev;
+
+                const adjustedX = pos.x - stagePos.x;
+                const adjustedY = pos.y - stagePos.y;
+
+                return {
+                    ...prev,
+                    points: [...prev.points, adjustedX, adjustedY]
+                };
+            });
         } else if (['rectangle', 'circle', 'line', 'ellipse'].includes(tool) && currentShape) {
             const updatedShape = ShapeTool.updateDrawing(currentShape, e, stagePos);
+            console.log('Updating shape:', updatedShape); // Debug log
             setCurrentShape(updatedShape);
         } else if (tool === 'eraser' && eraserState.isErasing) {
             const updatedEraserState = EraserTool.handleMouseMove(e, eraserState, stagePos);
             setEraserState(updatedEraserState);
         }
-    }, 4), [tool, currentLine, currentShape, stagePos, eraserState]); // Reduced throttle from 8ms to 4ms
+    }, 4), [tool, stagePos, eraserState, currentShape]); // Added currentShape to dependencies
 
     const handleMouseUp = useCallback((e: any) => {
         if (!isDrawing.current) return;
@@ -389,15 +445,24 @@ export const useWhiteboard = () => {
         isDrawing.current = false;
         
         if (tool === 'pen' && currentLine) {
-            if (PenTool.shouldSyncLine(currentLine)) {
-                yLines.push([JSON.stringify(currentLine)]);
-                saveToHistory();
-            }
+            // Add the completed line to synced lines
+            setSyncedLines(prevLines => [...prevLines, currentLine]);
+            yLines.push([JSON.stringify(currentLine)]);
+            saveToHistory();
             setCurrentLine(null);
         } else if (['rectangle', 'circle', 'line', 'ellipse'].includes(tool) && currentShape) {
+            console.log('Finishing shape:', currentShape); // Debug log
             if (ShapeTool.shouldSyncShape(currentShape)) {
-                yShapes.push([JSON.stringify(currentShape)]);
-                saveToHistory();
+                try {
+                    // Add the completed shape to synced shapes
+                    setSyncedShapes(prevShapes => [...prevShapes, currentShape]);
+                    yShapes.push([JSON.stringify(currentShape)]);
+                    saveToHistory();
+                } catch (error) {
+                    console.error('Error adding completed shape:', error);
+                    // Fallback: just update local state
+                    setSyncedShapes(prevShapes => [...prevShapes, currentShape]);
+                }
             }
             setCurrentShape(null);
         } else if (tool === 'eraser' && eraserState.isErasing) {
@@ -538,16 +603,30 @@ export const useWhiteboard = () => {
                 // Update the last created text with the actual text
                 const textIndex = syncedTexts.findIndex(text => text.id === lastTextId);
                 if (textIndex !== -1) {
-                    const updatedText = { ...syncedTexts[textIndex], text: newText, isEditing: false };
-                    yTexts.delete(textIndex, 1);
-                    yTexts.insert(textIndex, [JSON.stringify(updatedText)]);
-                    saveToHistory();
+                    try {
+                        const updatedText = { ...syncedTexts[textIndex], text: newText, isEditing: false };
+                        yTexts.delete(textIndex, 1);
+                        yTexts.insert(textIndex, [JSON.stringify(updatedText)]);
+                        saveToHistory();
+                    } catch (error) {
+                        console.error('Error updating text:', error);
+                        // Fallback: just update the local state
+                        setSyncedTexts(prev => prev.map(text => 
+                            text.id === lastTextId ? { ...text, text: newText } : text
+                        ));
+                    }
                 }
             } else if (lastTextId && !newText.trim()) {
                 // Remove empty text
                 const textIndex = syncedTexts.findIndex(text => text.id === lastTextId);
                 if (textIndex !== -1) {
-                    yTexts.delete(textIndex, 1);
+                    try {
+                        yTexts.delete(textIndex, 1);
+                    } catch (error) {
+                        console.error('Error deleting text:', error);
+                        // Fallback: just update the local state
+                        setSyncedTexts(prev => prev.filter(text => text.id !== lastTextId));
+                    }
                 }
             }
             lastCreatedTextId.current = null;
@@ -558,12 +637,18 @@ export const useWhiteboard = () => {
                 newText,
                 syncedTexts,
                 (updatedTexts) => {
-                    // Update Y.js
-                    yTexts.delete(0, yTexts.length);
-                    updatedTexts.forEach(text => {
-                        yTexts.push([JSON.stringify(text)]);
-                    });
-                    saveToHistory();
+                    try {
+                        // Update Y.js
+                        yTexts.delete(0, yTexts.length);
+                        updatedTexts.forEach(text => {
+                            yTexts.push([JSON.stringify(text)]);
+                        });
+                        saveToHistory();
+                    } catch (error) {
+                        console.error('Error updating texts:', error);
+                        // Fallback: just update the local state
+                        setSyncedTexts(updatedTexts);
+                    }
                 }
             );
         }
@@ -759,6 +844,8 @@ export const useWhiteboard = () => {
         images: syncedImages,
         shapes: allShapes,
         texts: syncedTexts,
+        currentLine,
+        currentShape,
         tool, 
         setTool, 
         color,

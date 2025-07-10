@@ -36,7 +36,9 @@ const Whiteboard = () => {
         canUndo,
         canRedo,
         clearCanvas,
-        lastCreatedTextId
+        lastCreatedTextId,
+        currentLine,
+        currentShape
     } = useWhiteboard();
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -507,8 +509,10 @@ const Whiteboard = () => {
                 // For existing text, update it (even if empty, let user decide)
                 handleTextEdit(editingText, trimmedText);
             }
+            // Always clear the editing state
             setEditingText(null);
             setTextInput('');
+            setTextInputPosition({ x: 0, y: 0 });
         }
     };
 
@@ -524,8 +528,10 @@ const Whiteboard = () => {
                     handleTextEdit('new', ''); // This will remove the empty text
                 }
             }
+            // Always clear the editing state
             setEditingText(null);
             setTextInput('');
+            setTextInputPosition({ x: 0, y: 0 });
         }
     };
 
@@ -821,12 +827,10 @@ const Whiteboard = () => {
                         />
                     ))}
 
-                    {/* Current Drawing Line */}
-                    {/* This component is not defined in the original file, so it will be commented out or removed if not needed.
-                        Assuming it's a placeholder for a drawing line state or a component that will be added later.
-                        For now, it's commented out as it's not part of the original file's state or props. */}
-                    {/* {currentLine && (
+                    {/* Current Drawing Line Preview */}
+                    {currentLine && (
                         <Line
+                            key={`preview-${currentLine.id}`}
                             points={currentLine.points}
                             stroke={currentLine.color || '#000000'}
                             strokeWidth={currentLine.strokeWidth || 2.5}
@@ -842,7 +846,38 @@ const Whiteboard = () => {
                             closed={false}
                             fillEnabled={false}
                         />
-                    )} */}
+                    )}
+
+                    {/* Current Shape Preview */}
+                    {currentShape && (
+                        (() => {
+                            const previewProps = {
+                                key: `preview-${currentShape.id}`,
+                                id: currentShape.id,
+                                name: "shape",
+                                x: currentShape.x,
+                                y: currentShape.y,
+                                stroke: currentShape.color,
+                                strokeWidth: currentShape.strokeWidth,
+                                fill: "transparent",
+                                listening: false,
+                                perfectDrawEnabled: false
+                            };
+
+                            switch (currentShape.type) {
+                                case 'rectangle':
+                                    return <Rect {...previewProps} width={currentShape.width || 0} height={currentShape.height || 0} />;
+                                case 'circle':
+                                    return <Circle {...previewProps} radius={currentShape.radius || 0} />;
+                                case 'ellipse':
+                                    return <Ellipse {...previewProps} radiusX={currentShape.radiusX || 0} radiusY={currentShape.radiusY || 0} />;
+                                case 'line':
+                                    return <Line {...previewProps} points={currentShape.points || []} />;
+                                default:
+                                    return null;
+                            }
+                        })()
+                    )}
                 </Layer>
             </Stage>
         </div>
