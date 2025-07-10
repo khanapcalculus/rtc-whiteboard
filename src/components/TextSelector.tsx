@@ -284,11 +284,10 @@ const TextSelector: React.FC<TextSelectorProps> = ({
                                         e.stopPropagation();
                                     }}
                                     style={{
-                                        padding: '8px 6px',
+                                        padding: '8px',
                                         cursor: 'pointer',
-                                        fontSize: '11px',
+                                        fontSize: '12px',
                                         color: 'black',
-                                        textAlign: 'center',
                                         backgroundColor: size === selectedSize ? '#e3f2fd' : 'transparent',
                                         borderRadius: '4px',
                                         border: size === selectedSize ? '1px solid #2196f3' : '1px solid transparent',
@@ -311,7 +310,7 @@ const TextSelector: React.FC<TextSelectorProps> = ({
                                         }
                                     }}
                                 >
-                                    {size}
+                                    {size}px
                                 </div>
                             ))}
                         </div>

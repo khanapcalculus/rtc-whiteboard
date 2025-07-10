@@ -71,11 +71,9 @@ export class ShapeTool {
             case 'line':
                 return {
                     ...baseShape,
-                    x: adjustedX, // Keep x,y for reference
-                    y: adjustedY,
                     points: [adjustedX, adjustedY, adjustedX, adjustedY],
-                    width: 0,  // Add width/height for proper hit detection
-                    height: 0
+                    width: Math.abs(adjustedX - adjustedX),  // Will be 0 initially
+                    height: Math.abs(adjustedY - adjustedY)  // Will be 0 initially
                 } as Shape;
             default:
                 return null;
@@ -117,15 +115,14 @@ export class ShapeTool {
                     radiusY: Math.abs(adjustedY - currentShape.y),
                 };
             case 'line':
-                // For lines, update both width/height and points
-                const newPoints = [currentShape.x, currentShape.y, adjustedX, adjustedY];
-                const width = Math.abs(adjustedX - currentShape.x);
-                const height = Math.abs(adjustedY - currentShape.y);
+                if (!currentShape.points || currentShape.points.length < 4) return currentShape;
+                const startX = currentShape.points[0];
+                const startY = currentShape.points[1];
                 return {
                     ...currentShape,
-                    points: newPoints,
-                    width,
-                    height
+                    points: [startX, startY, adjustedX, adjustedY],
+                    width: Math.abs(adjustedX - startX),
+                    height: Math.abs(adjustedY - startY)
                 };
             default:
                 return currentShape;
