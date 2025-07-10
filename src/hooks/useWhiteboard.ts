@@ -14,7 +14,7 @@ import { TextTool, type TextItem } from '../tools/text';
 export interface Line {
     id: string;
     points: number[];
-    tool: 'pen' | 'eraser';
+    tool: 'pen';
     color: string;
     strokeWidth: number;
 }
@@ -27,38 +27,7 @@ const yImages = doc.getArray<string>('images');
 const yShapes = doc.getArray<string>('shapes');
 const yTexts = doc.getArray<string>('texts');
 const yViewState = doc.getMap<number>('viewState');
-
-// Determine WebSocket URL based on environment
-const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-const wsHost = import.meta.env.PROD 
-    ? 'rtc-whiteboard-websocket.onrender.com'  // Render.com WebSocket URL
-    : 'localhost:3001';  // Local development
-const wsUrl = `${wsProtocol}//${wsHost}`;
-
-console.log('Environment:', import.meta.env.PROD ? 'production' : 'development');
-console.log('Protocol:', wsProtocol);
-console.log('Connecting to WebSocket server at:', wsUrl);
-
-const provider = new WebsocketProvider(wsUrl, 'whiteboard', doc);
-
-// Add connection status logging
-provider.on('status', ({ status }: { status: string }) => {
-    console.log('WebSocket connection status:', status);
-    if (status === 'connected') {
-        console.log('Successfully connected to WebSocket server');
-    } else if (status === 'disconnected') {
-        console.log('Disconnected from WebSocket server. Attempting to reconnect...');
-    }
-});
-
-provider.on('sync', (isSynced: boolean) => {
-    console.log('Document sync status:', isSynced ? 'synchronized' : 'synchronizing');
-});
-
-// Handle connection errors
-provider.on('connection-error', (error: Error) => {
-    console.error('WebSocket connection error:', error);
-});
+const provider = new WebsocketProvider('ws://192.168.31.158:3001', 'whiteboard', doc);
 
 // Performance optimization: Throttle function with improved responsiveness for pen tool
 const throttle = (func: Function, limit: number) => {
@@ -294,42 +263,35 @@ export const useWhiteboard = () => {
         }
 
         if (tool === 'text') {
-            const stage = e.target.getStage();
-            const pos = stage.getPointerPosition();
-            if (!pos) return;
-
-            const adjustedPos = {
-                x: pos.x - stagePos.x,
-                y: pos.y - stagePos.y
-            };
-            
-            const newText = TextTool.createText(
-                adjustedPos.x,
-                adjustedPos.y,
-                '', // Start with empty text
-                color,
-                fontSize,
-                fontFamily
-            );
-            
-            // Store the new text ID for later reference
-            lastCreatedTextId.current = newText.id;
-            doc.transact(() => {
+            const pos = e.target.getStage().getPointerPosition();
+            if (pos) {
+                const adjustedPos = {
+                    x: pos.x - stagePos.x,
+                    y: pos.y - stagePos.y
+                };
+                
+                const newText = TextTool.createText(
+                    adjustedPos.x,
+                    adjustedPos.y,
+                    '', // Start with empty text
+                    color,
+                    fontSize,
+                    fontFamily
+                );
+                
+                // Store the new text ID for later reference
+                lastCreatedTextId.current = newText.id;
                 yTexts.push([JSON.stringify(newText)]);
-            });
-            saveToHistory();
+                saveToHistory();
+            }
             return;
         }
 
         if (tool === 'eraser') {
-            const newLine = PenTool.handleMouseDown(e, stagePos, color, strokeWidth);
-            if (newLine) {
-                newLine.tool = 'eraser';
-                setCurrentLine(newLine);
-                isDrawing.current = true;
-            }
             const newEraserState = EraserTool.handleMouseDown(e, stagePos);
             setEraserState(newEraserState);
+            isDrawing.current = true;
+            return;
         }
 
         if (isDrawing.current) return;
@@ -358,124 +320,93 @@ export const useWhiteboard = () => {
             return;
         }
         lastMouseMoveTime.current = now;
-
+        
         if (tool === 'pen' && currentLine) {
             const updatedLine = PenTool.handleMouseMove(e, currentLine, stagePos);
             setCurrentLine(updatedLine);
-            
-            // Only sync if enough points have been collected
-            if (PenTool.shouldSyncLine(updatedLine)) {
-                const lineStr = JSON.stringify(updatedLine);
-                doc.transact(() => {
-                    yLines.delete(yLines.length - 1, 1);
-                    yLines.push([lineStr]);
-                });
-            }
-        } else if (tool === 'eraser' && currentLine) {
-            const updatedLine = PenTool.handleMouseMove(e, currentLine, stagePos);
-            updatedLine.tool = 'eraser';
-            setCurrentLine(updatedLine);
-            
-            // Only sync if enough points have been collected
-            if (PenTool.shouldSyncLine(updatedLine)) {
-                const lineStr = JSON.stringify(updatedLine);
-                doc.transact(() => {
-                    yLines.delete(yLines.length - 1, 1);
-                    yLines.push([lineStr]);
-                });
-            }
-
-            const newEraserState = EraserTool.handleMouseMove(e, eraserState, stagePos);
-            setEraserState(newEraserState);
         } else if (['rectangle', 'circle', 'line', 'ellipse'].includes(tool) && currentShape) {
             const updatedShape = ShapeTool.updateDrawing(currentShape, e, stagePos);
             setCurrentShape(updatedShape);
-        } else if (tool === 'select') {
-            SelectionTool.handleSelection(e.target, selection, (newSelection) => {
-                setSelection(newSelection);
-            });
+        } else if (tool === 'eraser' && eraserState.isErasing) {
+            const updatedEraserState = EraserTool.handleMouseMove(e, eraserState, stagePos);
+            setEraserState(updatedEraserState);
         }
-    }, 4), [tool, currentLine, currentShape, stagePos, eraserState, selection, doc, yLines]); // Reduced throttle from 8ms to 4ms
+    }, 4), [tool, currentLine, currentShape, stagePos, eraserState]); // Reduced throttle from 8ms to 4ms
 
     const handleMouseUp = useCallback((e: any) => {
         if (!isDrawing.current) return;
+        
         isDrawing.current = false;
-
+        
         if (tool === 'pen' && currentLine) {
-            // Sync final line state
-            const lineStr = JSON.stringify(currentLine);
-            doc.transact(() => {
-                yLines.delete(yLines.length - 1, 1);
-                yLines.push([lineStr]);
-            });
+            if (PenTool.shouldSyncLine(currentLine)) {
+                yLines.push([JSON.stringify(currentLine)]);
+                saveToHistory();
+            }
             setCurrentLine(null);
-            saveToHistory();
-        } else if (tool === 'eraser' && currentLine) {
-            // Sync final eraser line state
-            const lineStr = JSON.stringify(currentLine);
-            doc.transact(() => {
-                yLines.delete(yLines.length - 1, 1);
-                yLines.push([lineStr]);
-            });
-            setCurrentLine(null);
-
-            // Process eraser collisions
-            const newEraserState = EraserTool.handleMouseUp(eraserState);
-            setEraserState(newEraserState);
-
-            // Check for collisions and delete objects
-            const collisions = EraserTool.checkCollisions(eraserState.eraserPath, {
-                lines: syncedLines,
-                shapes: syncedShapes,
-                images: syncedImages,
-                texts: syncedTexts
-            });
-
-            // Delete collided objects
-            doc.transact(() => {
-                // Delete lines
-                collisions.linesToDelete.forEach(id => {
-                    const index = yLines.toArray().findIndex(lineStr => {
-                        const line = JSON.parse(lineStr);
-                        return line.id === id;
-                    });
-                    if (index !== -1) yLines.delete(index, 1);
-                });
-
-                // Delete shapes
-                collisions.shapesToDelete.forEach(id => {
-                    const index = yShapes.toArray().findIndex(shapeStr => {
-                        const shape = JSON.parse(shapeStr);
-                        return shape.id === id;
-                    });
-                    if (index !== -1) yShapes.delete(index, 1);
-                });
-
-                // Delete images
-                collisions.imagesToDelete.forEach(id => {
-                    const index = yImages.toArray().findIndex(imageStr => {
-                        const image = JSON.parse(imageStr);
-                        return image.id === id;
-                    });
-                    if (index !== -1) yImages.delete(index, 1);
-                });
-
-                // Delete texts
-                collisions.textsToDelete.forEach(id => {
-                    const index = yTexts.toArray().findIndex(textStr => {
-                        const text = JSON.parse(textStr);
-                        return text.id === id;
-                    });
-                    if (index !== -1) yTexts.delete(index, 1);
-                });
-            });
-            saveToHistory();
         } else if (['rectangle', 'circle', 'line', 'ellipse'].includes(tool) && currentShape) {
             if (ShapeTool.shouldSyncShape(currentShape)) {
                 yShapes.push([JSON.stringify(currentShape)]);
                 saveToHistory();
             }
             setCurrentShape(null);
+        } else if (tool === 'eraser' && eraserState.isErasing) {
+            const finalEraserState = EraserTool.handleMouseUp(eraserState);
+            setEraserState(finalEraserState);
+            
+            // Check for collisions and delete intersecting objects
+            const collisions = EraserTool.checkCollisions(eraserState.eraserPath, {
+                lines: syncedLines,
+                shapes: syncedShapes,
+                images: syncedImages,
+                texts: syncedTexts
+            });
+            
+            // Delete intersecting objects
+            let hasChanges = false;
+            
+            // Delete lines
+            collisions.linesToDelete.forEach(lineId => {
+                const lineIndex = syncedLines.findIndex(line => line.id === lineId);
+                if (lineIndex !== -1) {
+                    yLines.delete(lineIndex, 1);
+                    hasChanges = true;
+                }
+            });
+            
+            // Delete shapes
+            collisions.shapesToDelete.forEach(shapeId => {
+                const shapeIndex = syncedShapes.findIndex(shape => shape.id === shapeId);
+                if (shapeIndex !== -1) {
+                    yShapes.delete(shapeIndex, 1);
+                    hasChanges = true;
+                }
+            });
+            
+            // Delete images
+            collisions.imagesToDelete.forEach(imageId => {
+                const imageIndex = syncedImages.findIndex(image => image.id === imageId);
+                if (imageIndex !== -1) {
+                    yImages.delete(imageIndex, 1);
+                    hasChanges = true;
+                }
+            });
+            
+            // Delete texts
+            collisions.textsToDelete.forEach(textId => {
+                const textIndex = syncedTexts.findIndex(text => text.id === textId);
+                if (textIndex !== -1) {
+                    yTexts.delete(textIndex, 1);
+                    hasChanges = true;
+                }
+            });
+            
+            if (hasChanges) {
+                saveToHistory();
+            }
+            
+            // Clear the eraser path
+            setEraserState(EraserTool.getInitialState());
         }
     }, [tool, currentLine, currentShape, saveToHistory, eraserState, syncedLines, syncedImages, syncedShapes, syncedTexts]);
 
@@ -535,40 +466,58 @@ export const useWhiteboard = () => {
         }
     }, [selection, handleImageUpdate, handleShapeUpdate, handleTextUpdate]);
 
-    const handleTextDoubleClick = useCallback((e: any) => {
-        const id = e.target.id();
-        const textIndex = syncedTexts.findIndex(text => text.id === id);
-        if (textIndex !== -1) {
-            const text = syncedTexts[textIndex];
-            // Update current font settings to match the text being edited
-            setFontSize(text.fontSize || fontSize);
-            setFontFamily(text.fontFamily || fontFamily);
-            TextTool.handleDoubleClick(e.target, syncedTexts, (texts) => {
-                const textStr = JSON.stringify(texts[textIndex]);
-                doc.transact(() => {
-                    yTexts.delete(textIndex, 1);
-                    yTexts.push([textStr]);
+    const handleTextDoubleClick = useCallback((textId: string) => {
+        TextTool.handleDoubleClick(
+            { id: () => textId },
+            syncedTexts,
+            (updatedTexts) => {
+                // Update Y.js
+                yTexts.delete(0, yTexts.length);
+                updatedTexts.forEach(text => {
+                    yTexts.push([JSON.stringify(text)]);
                 });
-            });
-        }
-    }, [syncedTexts, fontSize, fontFamily]);
+            }
+        );
+    }, [syncedTexts]);
 
     const handleTextEdit = useCallback((textId: string, newText: string) => {
-        const textIndex = syncedTexts.findIndex(text => text.id === textId);
-        if (textIndex !== -1) {
-            const updatedText = { 
-                ...syncedTexts[textIndex], 
-                text: newText,
-                fontSize: fontSize,  // Update font size when editing
-                fontFamily: fontFamily  // Update font family when editing
-            };
-            doc.transact(() => {
-                yTexts.delete(textIndex, 1);
-                yTexts.push([JSON.stringify(updatedText)]);
-            });
-            saveToHistory();
+        if (textId === 'new') {
+            // Handle new text creation
+            const lastTextId = lastCreatedTextId.current;
+            if (lastTextId && newText.trim()) {
+                // Update the last created text with the actual text
+                const textIndex = syncedTexts.findIndex(text => text.id === lastTextId);
+                if (textIndex !== -1) {
+                    const updatedText = { ...syncedTexts[textIndex], text: newText, isEditing: false };
+                    yTexts.delete(textIndex, 1);
+                    yTexts.insert(textIndex, [JSON.stringify(updatedText)]);
+                    saveToHistory();
+                }
+            } else if (lastTextId && !newText.trim()) {
+                // Remove empty text
+                const textIndex = syncedTexts.findIndex(text => text.id === lastTextId);
+                if (textIndex !== -1) {
+                    yTexts.delete(textIndex, 1);
+                }
+            }
+            lastCreatedTextId.current = null;
+        } else {
+            // Handle existing text editing
+            TextTool.finishEditing(
+                textId,
+                newText,
+                syncedTexts,
+                (updatedTexts) => {
+                    // Update Y.js
+                    yTexts.delete(0, yTexts.length);
+                    updatedTexts.forEach(text => {
+                        yTexts.push([JSON.stringify(text)]);
+                    });
+                    saveToHistory();
+                }
+            );
         }
-    }, [syncedTexts, fontSize, fontFamily, saveToHistory]);
+    }, [syncedTexts, saveToHistory]);
 
     const undo = useCallback(() => {
         isUndoRedoOperation.current = true;
@@ -755,15 +704,6 @@ export const useWhiteboard = () => {
     // Combine synced shapes with current drawing shape
     const allShapes = currentShape ? [...syncedShapes, currentShape] : syncedShapes;
 
-    // Add cleanup for pen tool
-    useEffect(() => {
-        if (tool !== 'pen') {
-            isDrawing.current = false;
-            setCurrentLine(null);
-            PenTool.reset();
-        }
-    }, [tool]);
-
     return { 
         lines: uniqueLines,
         images: syncedImages,
@@ -798,5 +738,3 @@ export const useWhiteboard = () => {
         lastCreatedTextId
     };
 };
-
-

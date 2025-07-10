@@ -71,9 +71,9 @@ export class ShapeTool {
             case 'line':
                 return {
                     ...baseShape,
+                    x: 0, // For lines, x,y are not used - we use points array
+                    y: 0,
                     points: [adjustedX, adjustedY, adjustedX, adjustedY],
-                    width: 0,
-                    height: 0
                 } as Shape;
             default:
                 return null;
@@ -115,15 +115,14 @@ export class ShapeTool {
                     radiusY: Math.abs(adjustedY - currentShape.y),
                 };
             case 'line':
-                if (!currentShape.points || currentShape.points.length < 4) return currentShape;
-                const startX = currentShape.points[0];
-                const startY = currentShape.points[1];
-                return {
-                    ...currentShape,
-                    points: [startX, startY, adjustedX, adjustedY],
-                    width: Math.abs(adjustedX - startX),
-                    height: Math.abs(adjustedY - startY)
-                };
+                // For lines, keep the original start point and update the end point
+                if (currentShape.points && currentShape.points.length >= 4) {
+                    return {
+                        ...currentShape,
+                        points: [currentShape.points[0], currentShape.points[1], adjustedX, adjustedY],
+                    };
+                }
+                return currentShape;
             default:
                 return currentShape;
         }
@@ -139,9 +138,10 @@ export class ShapeTool {
                 return (shape.radiusX || 0) > 5 && (shape.radiusY || 0) > 5;
             case 'line':
                 if (!shape.points || shape.points.length < 4) return false;
-                const dx = shape.points[2] - shape.points[0];
-                const dy = shape.points[3] - shape.points[1];
-                const distance = Math.sqrt(dx * dx + dy * dy);
+                const distance = Math.sqrt(
+                    Math.pow(shape.points[2] - shape.points[0], 2) +
+                    Math.pow(shape.points[3] - shape.points[1], 2)
+                );
                 return distance > 5;
             default:
                 return false;
