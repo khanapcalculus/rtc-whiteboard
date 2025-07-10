@@ -803,7 +803,7 @@ const Whiteboard = () => {
                             points={line.points}
                             stroke={line.color || '#000000'}
                             strokeWidth={line.strokeWidth || 2.5}
-                            tension={0.1}
+                            tension={0.5}
                             lineCap="round"
                             lineJoin="round"
                             globalCompositeOperation={
@@ -813,7 +813,7 @@ const Whiteboard = () => {
                             listening={false}
                             shadowForStrokeEnabled={false}
                             hitStrokeWidth={0}
-                            bezier={false}
+                            bezier={true}
                             closed={false}
                             fillEnabled={false}
                         />
