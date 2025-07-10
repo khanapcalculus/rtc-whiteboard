@@ -512,10 +512,10 @@
     }
 
     .color-grid {
-        width: 640px;
-        height: 280px;
-        padding: 32px;
-        gap: 18px;
+        width: 720px;
+        height: 300px;
+        padding: 36px;
+        gap: 20px;
     }
     
     .text-grid {
@@ -529,8 +529,8 @@
     }
 
     .color-option {
-        width: 34px;
-        height: 34px;
+        width: 36px;
+        height: 36px;
         margin: 0 auto;
     }
 

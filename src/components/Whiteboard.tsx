@@ -225,11 +225,11 @@ const Whiteboard = () => {
                 e.evt.preventDefault();
                 e.evt.stopPropagation();
             }
-            // Add a small delay for touch events to ensure proper handling
+            // Add a longer delay for touch events to ensure proper handling
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
                 setTimeout(() => {
                     handleMouseDown(e);
-                }, 50);
+                }, 100);
             } else {
                 handleMouseDown(e);
             }
@@ -405,10 +405,10 @@ const Whiteboard = () => {
             }
             // For touch events, ensure proper selection
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
-                // Add a small delay for touch events to ensure proper registration
+                // Add a longer delay for touch events to ensure proper registration
                 setTimeout(() => {
                     handleMouseDown(e);
-                }, 50); // Increased delay for better touch handling
+                }, 100); // Increased delay for better touch handling
             } else {
                 handleMouseDown(e);
             }
@@ -425,10 +425,10 @@ const Whiteboard = () => {
             }
             // For touch events, ensure proper selection
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
-                // Add a small delay for touch events to ensure proper registration
+                // Add a longer delay for touch events to ensure proper registration
                 setTimeout(() => {
                     handleMouseDown(e);
-                }, 50); // Increased delay for better touch handling
+                }, 100); // Increased delay for better touch handling
             } else {
                 handleMouseDown(e);
             }
@@ -444,10 +444,10 @@ const Whiteboard = () => {
             }
             // For touch events, ensure proper selection
             if (e.evt && e.evt.type && e.evt.type.includes('touch')) {
-                // Add a small delay for touch events to ensure proper registration
+                // Add a longer delay for touch events to ensure proper registration
                 setTimeout(() => {
                     handleMouseDown(e);
-                }, 50); // Increased delay for better touch handling
+                }, 100); // Increased delay for better touch handling
             } else {
                 handleMouseDown(e);
             }
@@ -827,13 +827,13 @@ const Whiteboard = () => {
                             return newBox;
                         }}
                         enabledAnchors={['middle-left', 'middle-right', 'top-center', 'bottom-center', 'top-left', 'top-right', 'bottom-left', 'bottom-right']}
-                        anchorSize={10}
-                        anchorStrokeWidth={2}
-                        anchorCornerRadius={2}
+                        anchorSize={12}
+                        anchorStrokeWidth={3}
+                        anchorCornerRadius={3}
                         anchorFill="#ffffff"
                         anchorStroke="#0096fd"
                         borderStroke="#0096fd"
-                        borderStrokeWidth={2}
+                        borderStrokeWidth={3}
                         rotateEnabled={true}
                         keepRatio={false}
                     />
