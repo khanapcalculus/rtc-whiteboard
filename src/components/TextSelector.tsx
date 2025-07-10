@@ -87,87 +87,17 @@ const TextSelector: React.FC<TextSelectorProps> = ({
             </button>
             
             {showFontGrid && (
-                <div 
-                    className="text-grid" 
-                    style={{ touchAction: 'manipulation' }}
-                    onTouchStart={(e) => {
-                        // Prevent touch events from bubbling up to document
-                        e.stopPropagation();
-                    }}
-                    onTouchMove={(e) => {
-                        // Allow scrolling within the dropdown
-                        e.stopPropagation();
-                    }}
-                    onTouchEnd={(e) => {
-                        // Prevent touch events from bubbling up to document
-                        e.stopPropagation();
-                    }}
-                >
-                    <div style={{ 
-                        padding: '8px', 
-                        borderBottom: '1px solid #eee',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                        color: 'black'
-                    }}>
-                        Font & Size
-                    </div>
+                <div className="text-grid">
+                    <div className="grid-title">Font & Size</div>
                     
                     {/* Font Family Section */}
-                    <div style={{ 
-                        padding: '8px',
-                        borderBottom: '1px solid #eee'
-                    }}>
-                        <div style={{ 
-                            fontSize: '11px', 
-                            fontWeight: 'bold', 
-                            marginBottom: '6px',
-                            color: 'black'
-                        }}>
-                            Font Family
-                        </div>
-                        <div 
-                            style={{ 
-                                maxHeight: '180px', 
-                                overflowY: 'auto',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '2px',
-                                WebkitOverflowScrolling: 'touch'
-                            }}
-                            onTouchStart={(e) => {
-                                // Prevent touch events from bubbling up during scroll
-                                e.stopPropagation();
-                                setIsScrolling(true);
-                                if (scrollTimeoutRef.current) {
-                                    clearTimeout(scrollTimeoutRef.current);
-                                }
-                            }}
-                            onTouchMove={(e) => {
-                                // Prevent touch events from bubbling up during scroll
-                                e.stopPropagation();
-                                setIsScrolling(true);
-                                if (scrollTimeoutRef.current) {
-                                    clearTimeout(scrollTimeoutRef.current);
-                                }
-                                scrollTimeoutRef.current = setTimeout(() => {
-                                    setIsScrolling(false);
-                                }, 300);
-                            }}
-                            onTouchEnd={() => {
-                                // Reset scrolling state after a delay
-                                if (scrollTimeoutRef.current) {
-                                    clearTimeout(scrollTimeoutRef.current);
-                                }
-                                scrollTimeoutRef.current = setTimeout(() => {
-                                    setIsScrolling(false);
-                                }, 200);
-                            }}
-                        >
+                    <div className="font-section">
+                        <div className="section-title">Font Family</div>
+                        <div className="font-list">
                             {FONT_FAMILIES.map((font) => (
                                 <div
                                     key={font}
+                                    className={`font-item ${font === selectedFont ? 'active' : ''}`}
                                     onClick={() => {
                                         onFontChange(font);
                                         setShowFontGrid(false);
@@ -175,41 +105,13 @@ const TextSelector: React.FC<TextSelectorProps> = ({
                                     onTouchEnd={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        // Only handle selection if not scrolling
                                         if (!isScrolling) {
                                             onFontChange(font);
                                             setShowFontGrid(false);
                                         }
                                     }}
-                                    onTouchStart={(e) => {
-                                        e.stopPropagation();
-                                    }}
-                                    style={{
-                                        padding: '8px 12px',
-                                        cursor: 'pointer',
-                                        fontFamily: font,
-                                        fontSize: '12px',
-                                        color: 'black',
-                                        backgroundColor: font === selectedFont ? '#e3f2fd' : 'transparent',
-                                        borderRadius: '4px',
-                                        border: font === selectedFont ? '1px solid #2196f3' : '1px solid transparent',
-                                        transition: 'all 0.2s ease',
-                                        minHeight: '32px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        touchAction: 'manipulation',
-                                        WebkitTapHighlightColor: 'rgba(0, 0, 0, 0.1)'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        if (font !== selectedFont) {
-                                            e.currentTarget.style.backgroundColor = '#f5f5f5';
-                                        }
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        if (font !== selectedFont) {
-                                            e.currentTarget.style.backgroundColor = 'transparent';
-                                        }
-                                    }}
+                                    onTouchStart={(e) => e.stopPropagation()}
+                                    style={{ fontFamily: font }}
                                 >
                                     {font}
                                 </div>
@@ -218,55 +120,13 @@ const TextSelector: React.FC<TextSelectorProps> = ({
                     </div>
 
                     {/* Font Size Section */}
-                    <div style={{ padding: '8px' }}>
-                        <div style={{ 
-                            fontSize: '11px', 
-                            fontWeight: 'bold', 
-                            marginBottom: '6px',
-                            color: 'black'
-                        }}>
-                            Font Size
-                        </div>
-                        <div 
-                            style={{ 
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(4, 1fr)',
-                                gap: '4px',
-                                maxHeight: '120px',
-                                overflowY: 'auto'
-                            }}
-                            onTouchStart={(e) => {
-                                // Prevent touch events from bubbling up during scroll
-                                e.stopPropagation();
-                                setIsScrolling(true);
-                                if (scrollTimeoutRef.current) {
-                                    clearTimeout(scrollTimeoutRef.current);
-                                }
-                            }}
-                            onTouchMove={(e) => {
-                                // Prevent touch events from bubbling up during scroll
-                                e.stopPropagation();
-                                setIsScrolling(true);
-                                if (scrollTimeoutRef.current) {
-                                    clearTimeout(scrollTimeoutRef.current);
-                                }
-                                scrollTimeoutRef.current = setTimeout(() => {
-                                    setIsScrolling(false);
-                                }, 300);
-                            }}
-                            onTouchEnd={() => {
-                                // Reset scrolling state after a delay
-                                if (scrollTimeoutRef.current) {
-                                    clearTimeout(scrollTimeoutRef.current);
-                                }
-                                scrollTimeoutRef.current = setTimeout(() => {
-                                    setIsScrolling(false);
-                                }, 200);
-                            }}
-                        >
+                    <div className="size-section">
+                        <div className="section-title">Font Size</div>
+                        <div className="size-grid">
                             {FONT_SIZES.map((size) => (
                                 <div
                                     key={size}
+                                    className={`size-item ${size === selectedSize ? 'active' : ''}`}
                                     onClick={() => {
                                         onSizeChange(size);
                                         setShowFontGrid(false);
@@ -274,41 +134,12 @@ const TextSelector: React.FC<TextSelectorProps> = ({
                                     onTouchEnd={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        // Only handle selection if not scrolling
                                         if (!isScrolling) {
                                             onSizeChange(size);
                                             setShowFontGrid(false);
                                         }
                                     }}
-                                    onTouchStart={(e) => {
-                                        e.stopPropagation();
-                                    }}
-                                    style={{
-                                        padding: '8px',
-                                        cursor: 'pointer',
-                                        fontSize: '12px',
-                                        color: 'black',
-                                        backgroundColor: size === selectedSize ? '#e3f2fd' : 'transparent',
-                                        borderRadius: '4px',
-                                        border: size === selectedSize ? '1px solid #2196f3' : '1px solid transparent',
-                                        transition: 'all 0.2s ease',
-                                        minHeight: '32px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        touchAction: 'manipulation',
-                                        WebkitTapHighlightColor: 'rgba(0, 0, 0, 0.1)'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        if (size !== selectedSize) {
-                                            e.currentTarget.style.backgroundColor = '#f5f5f5';
-                                        }
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        if (size !== selectedSize) {
-                                            e.currentTarget.style.backgroundColor = 'transparent';
-                                        }
-                                    }}
+                                    onTouchStart={(e) => e.stopPropagation()}
                                 >
                                     {size}px
                                 </div>

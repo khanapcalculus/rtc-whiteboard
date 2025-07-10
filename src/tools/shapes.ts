@@ -72,8 +72,8 @@ export class ShapeTool {
                 return {
                     ...baseShape,
                     points: [adjustedX, adjustedY, adjustedX, adjustedY],
-                    width: Math.abs(adjustedX - adjustedX),  // Will be 0 initially
-                    height: Math.abs(adjustedY - adjustedY)  // Will be 0 initially
+                    width: 0,
+                    height: 0
                 } as Shape;
             default:
                 return null;
@@ -139,10 +139,9 @@ export class ShapeTool {
                 return (shape.radiusX || 0) > 5 && (shape.radiusY || 0) > 5;
             case 'line':
                 if (!shape.points || shape.points.length < 4) return false;
-                const distance = Math.sqrt(
-                    Math.pow(shape.points[2] - shape.points[0], 2) +
-                    Math.pow(shape.points[3] - shape.points[1], 2)
-                );
+                const dx = shape.points[2] - shape.points[0];
+                const dy = shape.points[3] - shape.points[1];
+                const distance = Math.sqrt(dx * dx + dy * dy);
                 return distance > 5;
             default:
                 return false;

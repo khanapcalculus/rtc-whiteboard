@@ -642,31 +642,37 @@ const Whiteboard = () => {
                 onMouseMove={onStageMouseMove}
                 onMouseUp={onStageMouseUp}
                 onTouchStart={(e) => {
-                    // For touch events, ensure proper handling
-                    if (tool === 'select') {
-                        // Add a small delay for touch selection to work properly
-                        setTimeout(() => {
-                            onStageMouseDown(e);
-                        }, 10);
-                    } else {
-                        onStageMouseDown(e);
-                    }
+                    e.evt.preventDefault();
+                    e.evt.stopPropagation();
+                    onStageMouseDown(e);
                 }}
-                onTouchMove={onStageMouseMove}
-                onTouchEnd={onStageMouseUp}
-                draggable={false} // Disable Konva's draggable, use custom pan
+                onTouchMove={(e) => {
+                    e.evt.preventDefault();
+                    e.evt.stopPropagation();
+                    onStageMouseMove(e);
+                }}
+                onTouchEnd={(e) => {
+                    e.evt.preventDefault();
+                    e.evt.stopPropagation();
+                    onStageMouseUp(e);
+                }}
+                draggable={false}
                 onDragStart={onStageDragStart}
                 onDragMove={onStageDragMove}
                 onDragEnd={onStageDragEnd}
                 x={stagePos.x}
                 y={stagePos.y}
                 style={{
-                    touchAction: tool === 'pan' ? 'none' : tool === 'select' ? 'none' : 'auto' // Dynamic touch action
+                    touchAction: 'none',
+                    msTouchAction: 'none',
+                    WebkitTouchCallout: 'none',
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none'
                 }}
                 scaleX={1}
                 scaleY={1}
                 listening={true}
-                perfectDrawEnabled={false} // Performance optimization for smoother drawing
+                perfectDrawEnabled={false}
             >
                 {/* Background Layer for Images and Shapes */}
                 <Layer
@@ -737,7 +743,7 @@ const Whiteboard = () => {
                             case 'ellipse':
                                 return <Ellipse key={shape.id} {...commonProps} radiusX={shape.radiusX || 0} radiusY={shape.radiusY || 0} />;
                             case 'line':
-                                return <Line key={shape.id} {...commonProps} points={[0, 0, shape.width || 0, shape.height || 0]} />;
+                                return <Line key={shape.id} {...commonProps} points={shape.points || [0, 0, 0, 0]} />;
                             default:
                                 return null;
                         }

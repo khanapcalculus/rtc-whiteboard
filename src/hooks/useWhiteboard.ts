@@ -755,6 +755,15 @@ export const useWhiteboard = () => {
     // Combine synced shapes with current drawing shape
     const allShapes = currentShape ? [...syncedShapes, currentShape] : syncedShapes;
 
+    // Add cleanup for pen tool
+    useEffect(() => {
+        if (tool !== 'pen') {
+            isDrawing.current = false;
+            setCurrentLine(null);
+            PenTool.reset();
+        }
+    }, [tool]);
+
     return { 
         lines: uniqueLines,
         images: syncedImages,
