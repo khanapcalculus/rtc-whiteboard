@@ -593,6 +593,21 @@ const Whiteboard = () => {
                 canRedo={canRedo}
                 onClear={clearCanvas}
             />
+            
+            {/* Logo in top right corner */}
+            <img 
+                src="/logo.png" 
+                alt="Logo" 
+                style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    height: '25px',
+                    width: 'auto',
+                    zIndex: 1001,
+                    pointerEvents: 'none'
+                }}
+            />
             <Stage
                 ref={stageRef}
                 width={window.innerWidth}
