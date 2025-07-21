@@ -1,0 +1,43 @@
+{
+  "name": "rtc-whiteboard",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "host": "nodemon server/server.cjs",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "homepage": "https://khanapcalculus.github.io/rtc-whiteboard/",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "konva": "^9.2.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-konva": "^18.2.10",
+    "y-websocket": "~1.5.0",
+    "yjs": "^13.6.14"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "@vitejs/plugin-react": "^4.6.0",
+    "eslint": "^9.30.1",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.6",
+    "gh-pages": "^6.3.0",
+    "globals": "^16.3.0",
+    "nodemon": "^3.1.0",
+    "typescript": "^5.2.2",
+    "typescript-eslint": "^8.35.1",
+    "vite": "^5.2.0"
+  }
+}

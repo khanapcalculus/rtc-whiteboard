@@ -1,0 +1,591 @@
+.toolbar {
+    position: fixed;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent; /* 100% transparent */
+    backdrop-filter: none; /* Remove blur effect */
+    -webkit-backdrop-filter: none; /* Remove blur effect */
+    padding: 12px 8px;
+    border-radius: 16px;
+    box-shadow: none; /* Remove shadow */
+    border: none; /* Remove border */
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    z-index: 1000;
+    touch-action: manipulation; /* Enable touch interactions */
+    -webkit-touch-callout: default; /* Allow touch interactions */
+    user-select: none; /* Prevent text selection */
+    -webkit-user-select: none;
+}
+
+.toolbar button {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #2c3e50;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation; /* Enable touch interactions */
+    -webkit-touch-callout: none; /* Prevent long press callout */
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1); /* Touch feedback */
+}
+
+.toolbar button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.toolbar button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.4); /* Better touch feedback */
+}
+
+.toolbar button.active {
+    background: rgba(173, 216, 230, 0.8); /* Light blue background */
+    border-color: rgba(52, 152, 219, 0.8); /* Blue border */
+    box-shadow: 0 6px 24px rgba(52, 152, 219, 0.3); /* Blue shadow */
+    color: #1a252f;
+    font-weight: 600;
+}
+
+.toolbar button.active:hover {
+    background: rgba(173, 216, 230, 0.9); /* Slightly more opaque light blue on hover */
+    transform: translateY(-1px);
+}
+
+.toolbar button.clear-button {
+    color: #e74c3c;
+    border-color: rgba(231, 76, 60, 0.3);
+}
+
+.toolbar button.clear-button:hover {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: rgba(231, 76, 60, 0.4);
+    color: #c0392b;
+}
+
+.toolbar button.clear-button:active {
+    background: rgba(231, 76, 60, 0.2);
+}
+
+.toolbar button.image-button {
+    color: #3498db;
+    border-color: rgba(52, 152, 219, 0.3);
+}
+
+.toolbar button.image-button:hover {
+    background: rgba(52, 152, 219, 0.1);
+    border-color: rgba(52, 152, 219, 0.4);
+    color: #2980b9;
+}
+
+.toolbar button.image-button:active {
+    background: rgba(52, 152, 219, 0.2);
+}
+
+.toolbar-separator {
+    width: 100%;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+    margin: 4px 0;
+}
+
+/* Text Selector */
+.text-selector {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.text-button {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #2c3e50;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+.text-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.text-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.text-button.active {
+    background: rgba(173, 216, 230, 0.8); /* Light blue background */
+    border-color: rgba(52, 152, 219, 0.8); /* Blue border */
+    box-shadow: 0 6px 24px rgba(52, 152, 219, 0.3); /* Blue shadow */
+    color: #1a252f;
+    font-weight: 600;
+}
+
+.text-grid {
+    position: absolute;
+    left: 50px;
+    top: 0;
+    width: 280px;
+    max-height: 450px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    animation: expandGrid 0.2s ease-out;
+    overflow: hidden;
+    touch-action: manipulation;
+}
+
+/* Shape Selector */
+.shape-selector {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.shape-button {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #2c3e50;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+.shape-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.shape-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.shape-button.active {
+    background: rgba(173, 216, 230, 0.8); /* Light blue background */
+    border-color: rgba(52, 152, 219, 0.8); /* Blue border */
+    box-shadow: 0 6px 24px rgba(52, 152, 219, 0.3); /* Blue shadow */
+    color: #1a252f;
+    font-weight: 600;
+}
+
+.shape-grid {
+    position: absolute;
+    left: 50px;
+    top: 0;
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    padding: 8px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 4px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    animation: expandGrid 0.2s ease-out;
+}
+
+.shape-option {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    min-height: 40px;
+    min-width: 40px;
+}
+
+.shape-option:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-color: rgba(0, 0, 0, 0.4);
+}
+
+.shape-option.selected {
+    border-color: #007bff;
+    border-width: 2px;
+    background: rgba(0, 123, 255, 0.1);
+}
+
+/* Color and Stroke Selectors */
+.color-selector,
+.stroke-selector {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.color-button {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #2c3e50;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+.stroke-button {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    cursor: pointer;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #2c3e50;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+.color-button:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.stroke-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.color-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 1);
+}
+
+.stroke-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.color-grid {
+    position: absolute;
+    left: 50px;
+    top: 0;
+    width: 645px;
+    height: 235px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    padding: 28px;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    animation: expandGrid 0.2s ease-out;
+}
+
+.stroke-grid {
+    position: absolute;
+    left: 50px;
+    top: 0;
+    width: 160px;
+    height: 160px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    padding: 8px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 4px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    animation: expandGrid 0.2s ease-out;
+}
+
+@keyframes expandGrid {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.color-option {
+    width: 30px;
+    height: 30px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-radius: 50%; /* Make them circular dots */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0 auto;
+}
+
+.stroke-option {
+    width: 22px;
+    height: 22px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.color-option:hover {
+    transform: scale(1.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border-color: rgba(0, 0, 0, 0.6);
+}
+
+.stroke-option:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border-color: rgba(0, 0, 0, 0.6);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.color-option.selected {
+    border-color: #007bff;
+    border-width: 3px;
+    transform: scale(1.2);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.3);
+}
+
+.stroke-option.selected {
+    border-color: #007bff;
+    border-width: 2px;
+    transform: scale(1.1);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.3);
+    background: rgba(0, 123, 255, 0.1);
+}
+
+.stroke-preview {
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+}
+
+.stroke-number {
+    font-size: 11px;
+    font-weight: 600;
+    color: #2c3e50;
+    user-select: none;
+}
+
+.stroke-button-number {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2c3e50;
+    user-select: none;
+}
+
+.stroke-indicator {
+    background: #333;
+    border-radius: 50%;
+    margin: auto;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .toolbar button,
+    .shape-button,
+    .color-button,
+    .stroke-button,
+    .text-button {
+        min-height: 44px;
+        min-width: 44px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .toolbar button:hover,
+    .shape-button:hover,
+    .color-button:hover,
+    .stroke-button:hover,
+    .text-button:hover {
+        transform: none;
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .color-grid {
+        width: 720px;
+        height: 300px;
+        padding: 36px;
+        gap: 20px;
+    }
+    
+    .text-grid {
+        width: 360px;
+        height: 160px;
+    }
+    
+    .stroke-grid {
+        width: 200px;
+        height: 200px;
+    }
+
+    .color-option {
+        width: 36px;
+        height: 36px;
+        margin: 0 auto;
+    }
+
+    .stroke-option {
+        width: 26px;
+        height: 26px;
+        margin: 0 auto;
+        padding: 0;
+    }
+}
+
+/* Disabled button styles */
+.toolbar button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.toolbar button.disabled:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: none;
+}
+
+.toolbar button.disabled:active {
+    transform: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Specific styles for select button to ensure tablet compatibility */
+.select-button {
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1) !important;
+    -webkit-touch-callout: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+
+.select-button:active {
+    background: rgba(255, 255, 255, 0.4) !important;
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .select-button {
+        min-height: 48px !important;
+        min-width: 48px !important;
+    }
+    
+    .select-button:hover {
+        transform: none !important;
+        background: rgba(255, 255, 255, 0.3) !important;
+    }
+} 
